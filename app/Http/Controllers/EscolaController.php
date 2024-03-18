@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Escola;
 use Illuminate\Support\Str;
+use App\Models\geraCodigoEscola;
 
 class EscolaController extends Controller
 {
