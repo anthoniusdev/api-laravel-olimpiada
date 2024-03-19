@@ -22,6 +22,12 @@ class EscolaController extends Controller
      */
     public function store(Request $request)
     {
+        if(!$request['usuario']){
+            $request->merge(['usuario' => '']);
+        }
+        if(!$request['senha']){
+            $request->merge(['senha' => '']);
+        }
         $id_escola = Str::uuid();
         $codigo_escola = Str::random(6);
         $request->merge(['codigo_escola' => $codigo_escola, 'id_escola' => $id_escola]);
@@ -33,6 +39,7 @@ class EscolaController extends Controller
      */
     public function show(string $id)
     {
+        //
     }
 
     /**

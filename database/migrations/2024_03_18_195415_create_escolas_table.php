@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('escolas', function (Blueprint $table) {
             $table->string('id_escola')->primary();
             $table->string('nome');
-            $table->string('CNPJ')->unique();
+            $table->string('cnpj')->unique();
             $table->string('telefone');
             $table->string('email');
             $table->string('usuario')->unique();
