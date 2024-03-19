@@ -11,14 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('alunos', function (Blueprint $table) {
-            $table->string('id_aluno');
+        Schema::create('areas', function (Blueprint $table) {
+            $table->string('id_area')->primary();
             $table->string('nome');
-            $table->string('usuario')->unique();
-            $table->string('email');
-            $table->string('senha');
-            $table->string('cpf')->uniqiue();
-            $table->string('codigo_escola');
+            $table->integer('limite_classificados');
+            $table->date('data_realizacao');
+            $table->time('horario_inicio');
+            $table->time('horario_fim');
             $table->timestamps();
         });
     }
@@ -28,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('alunos');
+        Schema::dropIfExists('areas');
     }
 };

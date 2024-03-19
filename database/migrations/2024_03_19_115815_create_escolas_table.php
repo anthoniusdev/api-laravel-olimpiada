@@ -20,8 +20,10 @@ return new class extends Migration
             $table->string('usuario')->unique();
             $table->string('senha');
             $table->string('codigo_escola')->unique();
-            $table->string('area1');
-            $table->string('area2');
+            $table->string('id_area1');
+            $table->string('id_area2');
+            $table->foreign('id_area1')->references('id_area')->on('areas');
+            $table->foreign('id_area2')->references('id_area')->on('areas');
             $table->timestamps();
         });
     }
