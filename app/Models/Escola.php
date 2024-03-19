@@ -16,5 +16,7 @@ class Escola extends Model
         'cnpj',
         'telefone',
         'codigo_escola',
+        'area1',
+        'area2',
     ];
 }

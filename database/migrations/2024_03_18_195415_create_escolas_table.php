@@ -20,6 +20,8 @@ return new class extends Migration
             $table->string('usuario')->unique();
             $table->string('senha');
             $table->string('codigo_escola')->unique();
+            $table->string('area1');
+            $table->string('area2');
             $table->timestamps();
         });
     }

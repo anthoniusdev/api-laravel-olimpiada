@@ -22,6 +22,14 @@ class EscolaController extends Controller
      */
     public function store(Request $request)
     {
+        if(count($request['areas']) > 0){
+            $areas = $request['areas'];
+            if(count($areas) > 1){
+            $request->merge(['area1' => $areas[0], 'area2' => $areas[1]]);
+            }else{
+                $request->merge(['area1' => $areas[0]]);
+            }
+        }
         if (!$request['usuario']) {
             $request->merge(['usuario' => '']);
         }
@@ -31,7 +39,7 @@ class EscolaController extends Controller
         $id_escola = Str::uuid();
         $codigo_escola = Str::random(6);
         $request->merge(['codigo_escola' => $codigo_escola, 'id_escola' => $id_escola]);
-        Escola::create($request->all());
+        Escola::create($request->except(['areas']));
     }
 
     /**
