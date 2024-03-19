@@ -2,19 +2,26 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Aluno;
+use App\Models\Usuario;
 use Illuminate\Http\Request;
-use App\Models\Escola;
 use Illuminate\Support\Str;
-use App\Models\geraCodigoEscola;
 
-class EscolaController extends Controller
+class AlunoController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        return Escola::all();
+        return Aluno::all();
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
     }
 
     /**
@@ -28,10 +35,13 @@ class EscolaController extends Controller
         if (!$request['senha']) {
             $request->merge(['senha' => '']);
         }
-        $id_escola = Str::uuid();
-        $codigo_escola = Str::random(6);
-        $request->merge(['codigo_escola' => $codigo_escola, 'id_escola' => $id_escola]);
-        Escola::create($request->all());
+        if (!$request['codigo_escola']) {
+            $request->merge(['codigo_escola' => '']);
+        }
+        $id_aluno = Str::uuid();
+        $request->merge(['id_aluno' => $id_aluno]);
+        Aluno::create($request->all());
+        
     }
 
     /**
@@ -39,7 +49,7 @@ class EscolaController extends Controller
      */
     public function show(string $id)
     {
-        return Escola::findOrFail($id);
+        return Aluno::findOrFail($id);
     }
 
     /**
