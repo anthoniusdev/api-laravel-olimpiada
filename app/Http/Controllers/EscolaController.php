@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Area;
 use Illuminate\Http\Request;
 use App\Models\Escola;
 use Illuminate\Support\Str;
 use App\Models\geraCodigoEscola;
+use Illuminate\Support\Facades\DB;
 
 class EscolaController extends Controller
 {
@@ -22,16 +24,25 @@ class EscolaController extends Controller
      */
     public function store(Request $request)
     {
+        /**
+         * Buscando a ID da área no banco de dados pelo nome 
+         */
         if (count($request['areas']) > 0) {
             $areas = $request['areas'];
+            $id_area1 = DB::select("SELECT id FROM areas WHERE nome = ?", [$areas[0]]);
+            $id_area1 = !empty($id_area1) ? $id_area1[0]->id : null ;
+            $request->merge(['id_area1' => $id_area1]);
             if (count($areas) > 1) {
-                $request->merge(['id_area1' => '2bqsoM57nkhPztAg', 'id_area2' => '4Euj4TVkkutnI2nx']); 
-                Editar para colocar o id certinho de forma automática. 
-            } else {
-                $request->merge(['id_area1' => $areas[0]]);
+                $id_area2 = DB::select("SELECT id FROM areas WHERE nome = ?", [$areas[1]]);
+                $id_area2 = !empty($id_area2) ? $id_area2[0]->id : null ;
+                $request->merge(['id_area2' => $id_area2]);
             }
         }
-        // Gerando o usuário para a escola de forma automática ---
+        // -------------------------------------------------------
+
+        /** 
+         * Gerando o usuário para a escola de forma automática 
+         */
         $usuario = $request['nome'];
         $usuario = str_replace(' ', '', $usuario);
         $usuario = iconv('UTF-8', 'ASCII//TRANSLIT', $usuario);
@@ -39,6 +50,7 @@ class EscolaController extends Controller
         $usuario = $usuario . $codigo;
         $request->merge(['usuario' => $usuario]);
         // -------------------------------------------------------
+
         if (!$request['senha']) {
             $request->merge(['senha' => '']);
         }
