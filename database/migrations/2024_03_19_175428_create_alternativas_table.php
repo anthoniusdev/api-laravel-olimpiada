@@ -11,9 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('area', function (Blueprint $table) {
+        Schema::create('alternativa', function (Blueprint $table) {
             $table->string('id')->primary();
-            $table->string('nome');
+            $table->longText('texto');
+            $table->string('id_questao');
             $table->timestamps();
         });
     }
@@ -23,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('areas');
+        Schema::dropIfExists('alternativas');
     }
 };

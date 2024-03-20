@@ -14,7 +14,7 @@ class Aluno extends Model
         'id_aluno',
         'nome',
         'email',
-        'usuario',
+        'username',
         'senha',
         'cpf',
         'codigo_escola',

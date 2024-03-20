@@ -31,7 +31,12 @@ class EscolaController extends Controller
             }
         }
         if (!$request['usuario']) {
-            $request->merge(['usuario' => '']);
+            $usuario = $request['nome'];
+            $usuario = str_replace(' ', '', $usuario);
+            $usuario = iconv('UTF-8', 'ASCII//TRANSLIT', $usuario);
+            $codigo = rand(1000, 9999);
+            $usuario = $usuario . $codigo;
+            $request->merge(['usuario' => $usuario]);
         }
         if (!$request['senha']) {
             $request->merge(['senha' => '']);

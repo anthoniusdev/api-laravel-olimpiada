@@ -11,19 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('escolas', function (Blueprint $table) {
-            $table->string('id_escola')->primary();
-            $table->string('nome');
-            $table->string('cnpj')->unique();
-            $table->string('telefone');
-            $table->string('email');
+        Schema::create('escola', function (Blueprint $table) {
+            $table->string('id')->primary();
             $table->string('usuario')->unique();
             $table->string('senha');
-            $table->string('codigo_escola')->unique();
+            $table->string('nome');
+            $table->string('email');
             $table->string('id_area1');
             $table->string('id_area2');
-            $table->foreign('id_area1')->references('id_area')->on('areas');
-            $table->foreign('id_area2')->references('id_area')->on('areas');
+            $table->string('cnpj')->unique();
+            $table->string('telefone');
+            $table->string('codigo_escola')->unique();
+            $table->foreign('id_area1')->references('id')->on('area')->cascadeOnDelete();
+            $table->foreign('id_area2')->references('id')->on('area')->cascadeOnDelete();
             $table->timestamps();
         });
     }
