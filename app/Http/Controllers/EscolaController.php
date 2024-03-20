@@ -25,7 +25,8 @@ class EscolaController extends Controller
         if (count($request['areas']) > 0) {
             $areas = $request['areas'];
             if (count($areas) > 1) {
-                $request->merge(['id_area1' => '2bqsoM57nkhPztAg', 'id_area2' => '4Euj4TVkkutnI2nx']);
+                $request->merge(['id_area1' => '2bqsoM57nkhPztAg', 'id_area2' => '4Euj4TVkkutnI2nx']); 
+                Editar para colocar o id certinho de forma automática. 
             } else {
                 $request->merge(['id_area1' => $areas[0]]);
             }
