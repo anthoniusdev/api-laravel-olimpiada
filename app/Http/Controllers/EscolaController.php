@@ -2,15 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Area;
 use Illuminate\Http\Request;
 use App\Models\Escola;
 use Illuminate\Support\Str;
-use App\Models\geraCodigoEscola;
 use Illuminate\Support\Facades\DB;
 
 class EscolaController extends Controller
 {
+    function resposta($codigo, $ok, $msg){
+        // header("Access-Control-Allow-Origin: *");
+        // header("Access-Control-Allow-Headers: *");
+        // header("Content-Type: application/json");
+    
+        http_response_code($codigo);
+        echo (json_encode([
+            'ok' => $ok,
+            'msg' => $msg
+        ]));
+}
     /**
      * Display a listing of the resource.
      */
@@ -32,11 +41,12 @@ class EscolaController extends Controller
             $id_area1 = DB::select("SELECT id FROM areas WHERE nome = ?", [$areas[0]]);
             $id_area1 = !empty($id_area1) ? $id_area1[0]->id : null ;
             $request->merge(['id_area1' => $id_area1]);
+            // $id_area2 = '';
             if (count($areas) > 1) {
                 $id_area2 = DB::select("SELECT id FROM areas WHERE nome = ?", [$areas[1]]);
                 $id_area2 = !empty($id_area2) ? $id_area2[0]->id : null ;
-                $request->merge(['id_area2' => $id_area2]);
             }
+            // $request->merge(['id_area2' => $id_area2]);
         }
         // -------------------------------------------------------
 
@@ -45,19 +55,49 @@ class EscolaController extends Controller
          */
         $usuario = $request['nome'];
         $usuario = str_replace(' ', '', $usuario);
-        $usuario = iconv('UTF-8', 'ASCII//TRANSLIT', $usuario);
+        $mapeamento = array(
+            'á' => 'a',
+            'à' => 'a',
+            'â' => 'a',
+            'ã' => 'a',
+            'é' => 'e',
+            'è' => 'e',
+            'ê' => 'e',
+            'í' => 'i',
+            'ì' => 'i',
+            'î' => 'i',
+            'ó' => 'o',
+            'ò' => 'o',
+            'ô' => 'o',
+            'õ' => 'o',
+            'ú' => 'u',
+            'ù' => 'u',
+            'û' => 'u',
+            'ç' => 'c',
+        );
+        $usuario = strtr($usuario, $mapeamento);
         $codigo = rand(1000, 9999);
         $usuario = $usuario . $codigo;
         $request->merge(['usuario' => $usuario]);
         // -------------------------------------------------------
 
-        if (!$request['senha']) {
-            $request->merge(['senha' => '']);
-        }
+        /** 
+         * Gerando a senha para a escola de forma automática 
+         */
+        $senha = Str::random(20);
+        $request->merge(['senha' => $senha]);
+        // -------------------------------------------------------
+
+        /** 
+         * Gerando o ID para a escola de forma automática 
+         */
         $id_escola = Str::uuid();
         $codigo_escola = Str::random(6);
         $request->merge(['codigo_escola' => $codigo_escola, 'id' => $id_escola]);
+        // -------------------------------------------------------
+    
         Escola::create($request->except(['areas']));
+        $this->resposta(200, true, "Escola cadastrada com sucesso");
     }
 
     /**

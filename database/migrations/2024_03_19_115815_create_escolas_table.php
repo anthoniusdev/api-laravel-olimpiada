@@ -17,11 +17,14 @@ return new class extends Migration
             $table->string('senha');
             $table->string('nome');
             $table->string('email');
-            $table->string('id_area1');
-            $table->string('id_area2');
+            $table->string('id_area1')->nullable()->default(null);
+            $table->string('id_area2')->nullable()->default(null);
             $table->string('cnpj')->unique();
             $table->string('telefone');
             $table->string('codigo_escola')->unique();
+            // $table->string('nome_responsavel');
+            // $table->string('cpf_responsavel');
+            // $table->string('municipio');
             $table->foreign('id_area1')->references('id')->on('areas')->cascadeOnDelete();
             $table->foreign('id_area2')->references('id')->on('areas')->cascadeOnDelete();
             $table->timestamps();
