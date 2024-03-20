@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('aluno', function (Blueprint $table) {
+        Schema::create('alunos', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->string('nome');
             $table->string('username')->unique();
@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('cpf')->uniqiue();
             $table->string('codigo_escola');
             $table->string('id_prova_respondida');
-            $table->foreign('codigo_escola')->references('codigo_escola')->on('escola')->cascadeOnDelete();
+            $table->foreign('codigo_escola')->references('codigo_escola')->on('escolas')->cascadeOnDelete();
             $table->timestamps();
         });
     }

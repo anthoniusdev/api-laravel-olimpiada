@@ -22,28 +22,28 @@ class EscolaController extends Controller
      */
     public function store(Request $request)
     {
-        if(count($request['areas']) > 0){
+        if (count($request['areas']) > 0) {
             $areas = $request['areas'];
-            if(count($areas) > 1){
-            $request->merge(['area1' => $areas[0], 'area2' => $areas[1]]);
-            }else{
-                $request->merge(['area1' => $areas[0]]);
+            if (count($areas) > 1) {
+                $request->merge(['id_area1' => '2bqsoM57nkhPztAg', 'id_area2' => '4Euj4TVkkutnI2nx']);
+            } else {
+                $request->merge(['id_area1' => $areas[0]]);
             }
         }
-        if (!$request['usuario']) {
-            $usuario = $request['nome'];
-            $usuario = str_replace(' ', '', $usuario);
-            $usuario = iconv('UTF-8', 'ASCII//TRANSLIT', $usuario);
-            $codigo = rand(1000, 9999);
-            $usuario = $usuario . $codigo;
-            $request->merge(['usuario' => $usuario]);
-        }
+        // Gerando o usuário para a escola de forma automática ---
+        $usuario = $request['nome'];
+        $usuario = str_replace(' ', '', $usuario);
+        $usuario = iconv('UTF-8', 'ASCII//TRANSLIT', $usuario);
+        $codigo = rand(1000, 9999);
+        $usuario = $usuario . $codigo;
+        $request->merge(['usuario' => $usuario]);
+        // -------------------------------------------------------
         if (!$request['senha']) {
             $request->merge(['senha' => '']);
         }
         $id_escola = Str::uuid();
         $codigo_escola = Str::random(6);
-        $request->merge(['codigo_escola' => $codigo_escola, 'id_escola' => $id_escola]);
+        $request->merge(['codigo_escola' => $codigo_escola, 'id' => $id_escola]);
         Escola::create($request->except(['areas']));
     }
 

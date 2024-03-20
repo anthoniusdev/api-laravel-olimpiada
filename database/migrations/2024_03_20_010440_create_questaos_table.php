@@ -11,15 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('questao', function (Blueprint $table) {
+        Schema::create('questaos', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->longText('titulo');
             $table->string('id_prova');
             $table->string('id_fase');
             $table->string('id_alternativa_correta');
-            $table->foreign('id_prova')->references('id')->on('prova')->cascadeOnDelete();
-            $table->foreign('id_fase')->references('id')->on('fase')->cascadeOnDelete();
-            $table->foreign('id_alternativa_correta')->references('id')->on('alternativa')->cascadeOnDelete();
+            $table->foreign('id_prova')->references('id')->on('provas')->cascadeOnDelete();
+            $table->foreign('id_fase')->references('id')->on('fases')->cascadeOnDelete();
+            $table->foreign('id_alternativa_correta')->references('id')->on('alternativas')->cascadeOnDelete();
             $table->timestamps();
         });
     }

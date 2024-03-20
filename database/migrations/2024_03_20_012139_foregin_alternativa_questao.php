@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('alternativa', function (Blueprint $table) {
-            $table->foreign('id_questao')->references('id')->on('questao')->cascadeOnDelete();
+        Schema::table('alternativas', function (Blueprint $table) {
+            $table->foreign('id_questao')->references('id')->on('questaos')->cascadeOnDelete();
         });
     }
     public function down()
     {
-        Schema::table('alternativa', function (Blueprint $table) {
+        Schema::table('alternativas', function (Blueprint $table) {
             $table->dropForeign(['id_questao']);
         });
     }

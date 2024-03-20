@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('fase', function (Blueprint $table) {
+        Schema::create('fases', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->integer('fase');
             $table->integer('limite_classificados');
@@ -19,7 +19,7 @@ return new class extends Migration
             $table->time('horario_inicio');
             $table->time('horario_fim');
             $table->string('id_area');
-            $table->foreign('id_area')->references('id')->on('area')->cascadeOnDelete();
+            $table->foreign('id_area')->references('id')->on('areas')->cascadeOnDelete();
             $table->timestamps();
         });
     }

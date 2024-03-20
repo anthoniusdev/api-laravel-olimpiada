@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('prova', function (Blueprint $table) {
+        Schema::create('provas', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->string('id_escola');
             $table->string('id_fase');
             $table->string('id_area');
-            $table->foreign('id_escola')->references('id')->on('escola')->cascadeOnDelete();
-            $table->foreign('id_fase')->references('id')->on('fase')->cascadeOnDelete();
-            $table->foreign('id_area')->references('id')->on('area')->cascadeOnDelete();
+            $table->foreign('id_escola')->references('id')->on('escolas')->cascadeOnDelete();
+            $table->foreign('id_fase')->references('id')->on('fases')->cascadeOnDelete();
+            $table->foreign('id_area')->references('id')->on('areas')->cascadeOnDelete();
             $table->timestamps();
         });
     }

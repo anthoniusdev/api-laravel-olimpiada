@@ -9,15 +9,15 @@ class Escola extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'id_escola',
+        'id',
         'nome',
         'email',
         'senha',
-        'username',
+        'usuario',
         'cnpj',
         'telefone',
         'codigo_escola',
-        'area1',
-        'area2',
+        'id_area1',
+        'id_area2',
     ];
 }

@@ -12,6 +12,6 @@ class Prova extends Model
         'id_fase',
         'id_escola',
         'id_area',
-        'id_prova',
+        'id',
     ];
 }

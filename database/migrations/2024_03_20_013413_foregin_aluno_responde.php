@@ -9,13 +9,13 @@ return new class extends Migration
 
     public function up(): void
     {
-        Schema::table('aluno', function (Blueprint $table) {
-            $table->foreign('id_prova_respondida')->references('id')->on('responde')->cascadeOnDelete();
+        Schema::table('alunos', function (Blueprint $table) {
+            $table->foreign('id_prova_respondida')->references('id')->on('respondes')->cascadeOnDelete();
         });
     }
     public function down()
     {
-        Schema::table('aluno', function (Blueprint $table) {
+        Schema::table('alunos', function (Blueprint $table) {
             $table->dropForeign(['id_prova_respondida']);
         });
     }
