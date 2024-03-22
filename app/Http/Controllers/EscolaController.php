@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Mail\DadosEscola;
 use Illuminate\Http\Request;
 use App\Models\Escola;
+use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -106,7 +107,16 @@ class EscolaController extends Controller
         $codigo_escola = Str::random(6);
         $request->merge(['codigo_escola' => $codigo_escola, 'id' => $id_escola]);
         // -------------------------------------------------------
-        Escola::create($request->except(['areas']));
+        $request->merge(['tipo' => 'escola']);
+        $dados_user = [
+            'username' => $usuario,
+            'name' => $request['nome'],
+            'password' => $senha,
+            'tipo' => 'escola',
+            'id' => $id_escola
+        ];
+        User::create($dados_user);
+        Escola::create($request->except('areas', 'tipo'));
 
         /*
          * Enviando email com dados gerados automaticamente para escola
@@ -122,9 +132,7 @@ class EscolaController extends Controller
             'linkEmailDuvida' => "mailto:support@olimpiadasdosertaoprodutivo.com?subject=$nomeEscola - Dúvida em relação a Olímpiadas"
         ];
         $email = new DadosEscola($dados);
-        Mail::to($request['email'])->send($email)->withSwiftMessage(function(Message $message){
-            $message->getHeaders()->addTextHeader('Importance', 'high');
-        });
+        Mail::to($request['email'])->send($email);
          // -------------------------------------------------------
         $this->resposta(200, true, "Escola cadastrada com sucesso");
     }
