@@ -2,24 +2,27 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\DadosEscola;
 use Illuminate\Http\Request;
 use App\Models\Escola;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Mail\Message;
 
 class EscolaController extends Controller
 {
-    function resposta($codigo, $ok, $msg){
-        // header("Access-Control-Allow-Origin: *");
-        // header("Access-Control-Allow-Headers: *");
-        // header("Content-Type: application/json");
-    
+    function resposta($codigo, $ok, $msg)
+    {
         http_response_code($codigo);
         echo (json_encode([
             'ok' => $ok,
             'msg' => $msg
         ]));
-}
+    }
+    function enviarEmail($usuario, $codigo, $senha){
+        
+    }
     /**
      * Display a listing of the resource.
      */
@@ -33,18 +36,25 @@ class EscolaController extends Controller
      */
     public function store(Request $request)
     {
+        /** 
+         * Tratando dados do react para se encaixar na API
+         */
+        $request->mergeIfMissing(['municipio' => 'Macaúbas']);
+        $request->merge(['nome_responsavel' => $request['nomeResponsavel'], 'cpf_responsavel' => $request['cpfResponsavel']]);
+        $request->request->remove('nomeResponsavel');
+        $request->request->remove('cpfResponsavel');
         /**
          * Buscando a ID da área no banco de dados pelo nome 
          */
         if (count($request['areas']) > 0) {
             $areas = $request['areas'];
             $id_area1 = DB::select("SELECT id FROM areas WHERE nome = ?", [$areas[0]]);
-            $id_area1 = !empty($id_area1) ? $id_area1[0]->id : null ;
+            $id_area1 = !empty($id_area1) ? $id_area1[0]->id : null;
             $request->merge(['id_area1' => $id_area1]);
             // $id_area2 = '';
             if (count($areas) > 1) {
                 $id_area2 = DB::select("SELECT id FROM areas WHERE nome = ?", [$areas[1]]);
-                $id_area2 = !empty($id_area2) ? $id_area2[0]->id : null ;
+                $id_area2 = !empty($id_area2) ? $id_area2[0]->id : null;
             }
             // $request->merge(['id_area2' => $id_area2]);
         }
@@ -76,6 +86,7 @@ class EscolaController extends Controller
             'ç' => 'c',
         );
         $usuario = strtr($usuario, $mapeamento);
+        $usuario = Str::lower($usuario);
         $codigo = rand(1000, 9999);
         $usuario = $usuario . $codigo;
         $request->merge(['usuario' => $usuario]);
@@ -95,8 +106,26 @@ class EscolaController extends Controller
         $codigo_escola = Str::random(6);
         $request->merge(['codigo_escola' => $codigo_escola, 'id' => $id_escola]);
         // -------------------------------------------------------
-    
         Escola::create($request->except(['areas']));
+
+        /*
+         * Enviando email com dados gerados automaticamente para escola
+         */
+        $nomeEscola = $request['nome'];
+        $dados = [
+            'nomeResponsavel' => $request['nome_responsavel'],
+            'nomeEscola' => $nomeEscola,
+            'codigo' => $request['codigo_escola'],
+            'usuario' => $request['usuario'],
+            'senha' => $request['senha'],
+            'linkPortal' => 'http://localhost:5173/',
+            'linkEmailDuvida' => "mailto:support@olimpiadasdosertaoprodutivo.com?subject=$nomeEscola - Dúvida em relação a Olímpiadas"
+        ];
+        $email = new DadosEscola($dados);
+        Mail::to($request['email'])->send($email)->withSwiftMessage(function(Message $message){
+            $message->getHeaders()->addTextHeader('Importance', 'high');
+        });
+         // -------------------------------------------------------
         $this->resposta(200, true, "Escola cadastrada com sucesso");
     }
 

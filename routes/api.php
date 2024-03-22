@@ -2,8 +2,10 @@
 
 use App\Http\Controllers\AlunoController;
 use App\Http\Controllers\EscolaController;
+use App\Mail\EscolaDados;
 use Illuminate\Support\Facades\Route;
 
 Route::apiResource('escola', EscolaController::class);
 
 Route::apiResource('aluno', AlunoController::class);
+

@@ -19,8 +19,8 @@ class Escola extends Model
         'codigo_escola',
         'id_area1',
         'id_area2',
-        // 'nome_responsavel',
-        // 'cpf_responsavel',
-        // 'municipio',
+        'nome_responsavel',
+        'cpf_responsavel',
+        'municipio',
     ];
 }
