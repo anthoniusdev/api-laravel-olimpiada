@@ -10,5 +10,6 @@ Route::prefix('/escola')->group(function(){
     Route::post('/cadastro', [EscolaController::class, 'store']);
     Route::post('/login', [AuthController::class, 'loginEscola']);
 });
-
-Route::apiResource('/aluno', AlunoController::class);
+Route::prefix('/aluno')->group(function(){
+    Route::post('/cadastro', [AlunoController::class, 'store']);
+});

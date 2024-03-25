@@ -8,10 +8,8 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Mail\Message;
 
-
-class DadosEscola extends Mailable
+class DadosAluno extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -30,7 +28,7 @@ class DadosEscola extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Escola Confirmada - I Olimpíadas Científicas do Sertão Produtivo',
+            subject: 'Aluno Confirmado - I Olimpíadas Científicas do Sertão Produtivo',
         );
     }
 
@@ -40,15 +38,14 @@ class DadosEscola extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'mail.DadosEscola',
+            view: 'mail.DadosAluno',
         );
     }
-
     public function build()
     {
         $image_path = public_path('mail/logo3.png');
         $base64Image = base64_encode(file_get_contents($image_path));
-        return $this->view('mail.DadosEscola')
+        return $this->view('mail.DadosAluno')
             ->subject('Cadastro - I Olimpíadas Científicas do Sertão Produtivo')
             ->with([
                 'logo' => $base64Image

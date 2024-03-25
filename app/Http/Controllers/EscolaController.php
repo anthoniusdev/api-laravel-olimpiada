@@ -9,7 +9,6 @@ use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Mail\Message;
 
 class EscolaController extends Controller
 {
@@ -21,8 +20,8 @@ class EscolaController extends Controller
             'msg' => $msg
         ]));
     }
-    function enviarEmail($usuario, $codigo, $senha){
-        
+    function enviarEmail($usuario, $codigo, $senha)
+    {
     }
     /**
      * Display a listing of the resource.
@@ -40,10 +39,11 @@ class EscolaController extends Controller
         /** 
          * Tratando dados do react para se encaixar na API
          */
-        $request->mergeIfMissing(['municipio' => 'Macaúbas']);
         $request->merge(['nome_responsavel' => $request['nomeResponsavel'], 'cpf_responsavel' => $request['cpfResponsavel']]);
         $request->request->remove('nomeResponsavel');
         $request->request->remove('cpfResponsavel');
+        // -------------------------------------------------------
+
         /**
          * Buscando a ID da área no banco de dados pelo nome 
          */
@@ -52,12 +52,11 @@ class EscolaController extends Controller
             $id_area1 = DB::select("SELECT id FROM areas WHERE nome = ?", [$areas[0]]);
             $id_area1 = !empty($id_area1) ? $id_area1[0]->id : null;
             $request->merge(['id_area1' => $id_area1]);
-            // $id_area2 = '';
             if (count($areas) > 1) {
                 $id_area2 = DB::select("SELECT id FROM areas WHERE nome = ?", [$areas[1]]);
                 $id_area2 = !empty($id_area2) ? $id_area2[0]->id : null;
+                $request->merge(['id_area2' => $id_area2]);
             }
-            // $request->merge(['id_area2' => $id_area2]);
         }
         // -------------------------------------------------------
 
@@ -101,13 +100,16 @@ class EscolaController extends Controller
         // -------------------------------------------------------
 
         /** 
-         * Gerando o ID para a escola de forma automática 
+         * Gerando o ID e o código para a escola de forma automática 
          */
         $id_escola = Str::uuid();
         $codigo_escola = Str::random(6);
         $request->merge(['codigo_escola' => $codigo_escola, 'id' => $id_escola]);
         // -------------------------------------------------------
-        $request->merge(['tipo' => 'escola']);
+
+        /**
+         * Formatando os dados para inserir na tabela user
+         */
         $dados_user = [
             'username' => $usuario,
             'name' => $request['nome'],
@@ -115,8 +117,10 @@ class EscolaController extends Controller
             'tipo' => 'escola',
             'id' => $id_escola
         ];
+        // -------------------------------------------------------
+
         User::create($dados_user);
-        Escola::create($request->except('areas', 'tipo'));
+        Escola::create($request->except('areas'));
 
         /*
          * Enviando email com dados gerados automaticamente para escola
@@ -133,8 +137,13 @@ class EscolaController extends Controller
         ];
         $email = new DadosEscola($dados);
         Mail::to($request['email'])->send($email);
-         // -------------------------------------------------------
+        // -------------------------------------------------------
+
+        /**
+         * Enviando resposta para o frontend
+         */
         $this->resposta(200, true, "Escola cadastrada com sucesso");
+        // -------------------------------------------------------
     }
 
     /**

@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('id_escola');
             $table->string('id_fase');
             $table->string('id_area');
+            $table->string('modalidade');
             $table->foreign('id_escola')->references('id')->on('escolas')->cascadeOnDelete();
             $table->foreign('id_fase')->references('id')->on('fases')->cascadeOnDelete();
             $table->foreign('id_area')->references('id')->on('areas')->cascadeOnDelete();
