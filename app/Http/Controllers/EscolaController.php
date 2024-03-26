@@ -8,7 +8,9 @@ use App\Models\Escola;
 use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Psy\CodeCleaner\FunctionReturnInWriteContextPass;
 
 class EscolaController extends Controller
 {
@@ -96,7 +98,8 @@ class EscolaController extends Controller
          * Gerando a senha para a escola de forma automática 
          */
         $senha = Str::random(20);
-        $request->merge(['senha' => $senha]);
+        $senhaHash = Hash::make($senha);
+        $request->merge(['senha' => $senhaHash]);
         // -------------------------------------------------------
 
         /** 
@@ -113,7 +116,7 @@ class EscolaController extends Controller
         $dados_user = [
             'username' => $usuario,
             'name' => $request['nome'],
-            'password' => $senha,
+            'password' => $senhaHash,
             'tipo' => 'escola',
             'id' => $id_escola
         ];
@@ -131,9 +134,10 @@ class EscolaController extends Controller
             'nomeEscola' => $nomeEscola,
             'codigo' => $request['codigo_escola'],
             'usuario' => $request['usuario'],
-            'senha' => $request['senha'],
+            'senha' => $senha,
             'linkPortal' => 'http://localhost:5173/',
-            'linkEmailDuvida' => "mailto:support@olimpiadasdosertaoprodutivo.com?subject=$nomeEscola - Dúvida em relação a Olímpiadas"
+            'linkEmailDuvida' => "mailto:support@olimpiadasdosertaoprodutivo.com?subject=$nomeEscola - Dúvida em relação a Olímpiadas",
+            'linkLogo' =>  'http://localhost:8000/api/img/public/logo'
         ];
         $email = new DadosEscola($dados);
         Mail::to($request['email'])->send($email);
@@ -176,5 +180,8 @@ class EscolaController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+    public function escolas(){
+        return Escola::all();
     }
 }

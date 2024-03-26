@@ -9,6 +9,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\DadosAluno;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+
 class AlunoController extends Controller
 {
     function resposta($codigo, $ok, $msg)
@@ -95,7 +97,8 @@ class AlunoController extends Controller
          * Gerando a senha para o aluno de forma automática 
          */
         $senha = Str::random(20);
-        $request->merge(['senha' => $senha]);
+        $senhaHash = Hash::make($senha);
+        $request->merge(['senha' => $senhaHash]);
         // -------------------------------------------------------
 
         /** 
@@ -111,7 +114,7 @@ class AlunoController extends Controller
         $dados_user = [
             'username' => $usuario,
             'name' => $request['nome'],
-            'password' => $senha,
+            'password' => $senhaHash,
             'tipo' => 'aluno',
             'id' => $id_aluno
         ];
@@ -130,7 +133,8 @@ class AlunoController extends Controller
             'usuario' => $usuario,
             'senha' => $senha,
             'linkPortal' => 'http://localhost:5173/',
-            'linkEmailDuvida' => "mailto:support@olimpiadasdosertaoprodutivo.com?subject=$nomeAluno' - Dúvida em relação a Olímpiadas"
+            'linkEmailDuvida' => "mailto:support@olimpiadasdosertaoprodutivo.com?subject=$nomeAluno' - Dúvida em relação a Olímpiadas",
+            'linkLogo' =>  'http://localhost:8000/api/img/public/logo'
         ];
         $email = new DadosAluno($dados);
         Mail::to($request['email'])->send($email);

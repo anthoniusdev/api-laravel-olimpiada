@@ -47,12 +47,8 @@ class DadosEscola extends Mailable
     public function build()
     {
         $image_path = public_path('mail/logo3.png');
-        $base64Image = base64_encode(file_get_contents($image_path));
         return $this->view('mail.DadosEscola')
-            ->subject('Cadastro - I Olimpíadas Científicas do Sertão Produtivo')
-            ->with([
-                'logo' => $base64Image
-            ]);
+            ->subject('Cadastro - I Olimpíadas Científicas do Sertão Produtivo');
     }
     /**
      * Get the attachments for the message.
