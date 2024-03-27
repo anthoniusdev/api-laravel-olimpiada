@@ -1,7 +1,5 @@
 <?php
-
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Cross-Origin Resource Sharing (CORS) Configuration
@@ -19,9 +17,10 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
-
-    'allowed_origins_patterns' => [],
+    'allowed_origins' => [
+        'https://olimpiadasdosertaoprodutivo.com',
+        // Adicione outras origens permitidas conforme necessário
+    ],
 
     'allowed_headers' => ['*'],
 
@@ -30,5 +29,4 @@ return [
     'max_age' => 0,
 
     'supports_credentials' => false,
-
 ];

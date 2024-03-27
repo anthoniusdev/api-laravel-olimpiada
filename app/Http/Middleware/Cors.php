@@ -37,9 +37,9 @@ class Cors
 
         if (in_array($origin, $allowedOrigins)) {
             return $next($request)
-                ->header('Access-Control-Allow-Origin', $origin)
-                ->header('Access-Control-Allow-Methods', implode(', ', $allowedMethods))
-                ->header('Access-Control-Allow-Headers', implode(', ', $allowedHeaders))
+                ->header('Access-Control-Allow-Origin', 'https://olimpiadasdosertaoprodutivo.com')
+                ->header('Access-Control-Allow-Methods', '*')
+                ->header('Access-Control-Allow-Headers', '*')
                 ->header('Access-Control-Allow-Credentials', 'true');
         }
 
