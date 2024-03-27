@@ -2,17 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\DadosEscola;
+use App\Models\Aluno;
 use Illuminate\Http\Request;
-use App\Models\Escola;
-use App\Models\User;
 use Illuminate\Support\Str;
+use App\Models\User;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\DadosAluno;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
-use Psy\CodeCleaner\FunctionReturnInWriteContextPass;
 
-class EscolaController extends Controller
+class AlunoController extends Controller
 {
     function resposta($codigo, $ok, $msg)
     {
@@ -22,15 +21,19 @@ class EscolaController extends Controller
             'msg' => $msg
         ]));
     }
-    function enviarEmail($usuario, $codigo, $senha)
-    {
-    }
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        return Escola::all();
+        return Aluno::all();
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
     }
 
     /**
@@ -41,29 +44,25 @@ class EscolaController extends Controller
         /** 
          * Tratando dados do react para se encaixar na API
          */
-        $request->merge(['nome_responsavel' => $request['nomeResponsavel'], 'cpf_responsavel' => $request['cpfResponsavel']]);
-        $request->request->remove('nomeResponsavel');
-        $request->request->remove('cpfResponsavel');
+        $request->merge(['codigo_escola' => $request['codigoEscola']]);
+        $request->request->remove('codigoEscola');
         // -------------------------------------------------------
-
+        
         /**
          * Buscando a ID da área no banco de dados pelo nome 
          */
-        if (count($request['areas']) > 0) {
-            $areas = $request['areas'];
-            $id_area1 = DB::select("SELECT id FROM areas WHERE nome = ?", [$areas[0]]);
-            $id_area1 = !empty($id_area1) ? $id_area1[0]->id : null;
-            $request->merge(['id_area1' => $id_area1]);
-            if (count($areas) > 1) {
-                $id_area2 = DB::select("SELECT id FROM areas WHERE nome = ?", [$areas[1]]);
-                $id_area2 = !empty($id_area2) ? $id_area2[0]->id : null;
-                $request->merge(['id_area2' => $id_area2]);
-            }
+        if ($request['area']) {
+            $area = $request['area'];
+            $id_area = DB::select("SELECT id FROM areas WHERE nome = ?", [$area]);
+            $id_area = !empty($id_area) ? $id_area[0]->id : null;
+            $request->merge(['id_area' => $id_area]);
+        }else{
+            $this->resposta(500, false, "Área não escolhida");
         }
         // -------------------------------------------------------
 
         /** 
-         * Gerando o usuário para a escola de forma automática 
+         * Gerando o usuário para o aluno de forma automática 
          */
         $usuario = $request['nome'];
         $usuario = str_replace(' ', '', $usuario);
@@ -95,7 +94,7 @@ class EscolaController extends Controller
         // -------------------------------------------------------
 
         /** 
-         * Gerando a senha para a escola de forma automática 
+         * Gerando a senha para o aluno de forma automática 
          */
         $senha = Str::random(20);
         $senhaHash = Hash::make($senha);
@@ -103,11 +102,10 @@ class EscolaController extends Controller
         // -------------------------------------------------------
 
         /** 
-         * Gerando o ID e o código para a escola de forma automática 
+         * Gerando o id para o aluno de forma automática 
          */
-        $id_escola = Str::uuid();
-        $codigo_escola = Str::random(6);
-        $request->merge(['codigo_escola' => $codigo_escola, 'id' => $id_escola]);
+        $id_aluno = Str::uuid();
+        $request->merge(['id' => $id_aluno]);
         // -------------------------------------------------------
 
         /**
@@ -117,37 +115,31 @@ class EscolaController extends Controller
             'username' => $usuario,
             'name' => $request['nome'],
             'password' => $senhaHash,
-            'tipo' => 'escola',
-            'id' => $id_escola
+            'tipo' => 'aluno',
+            'id' => $id_aluno
         ];
         // -------------------------------------------------------
-
         User::create($dados_user);
-        Escola::create($request->except('areas'));
+        Aluno::create($request->all());
 
         /*
-         * Enviando email com dados gerados automaticamente para escola
+         * Enviando email com dados gerados automaticamente para o aluno
          */
-        $nomeEscola = $request['nome'];
+        $nomeAluno = $request['nome'];
         $dados = [
             'nomeResponsavel' => $request['nome_responsavel'],
-            'nomeEscola' => $nomeEscola,
+            'nomeAluno' => $nomeAluno,
             'codigo' => $request['codigo_escola'],
-            'usuario' => $request['usuario'],
+            'usuario' => $usuario,
             'senha' => $senha,
             'linkPortal' => 'http://localhost:5173/',
-            'linkEmailDuvida' => "mailto:support@olimpiadasdosertaoprodutivo.com?subject=$nomeEscola - Dúvida em relação a Olímpiadas",
+            'linkEmailDuvida' => "mailto:support@olimpiadasdosertaoprodutivo.com?subject=$nomeAluno' - Dúvida em relação a Olímpiadas",
             'linkLogo' =>  'http://localhost:8000/api/img/public/logo'
         ];
-        $email = new DadosEscola($dados);
+        $email = new DadosAluno($dados);
         Mail::to($request['email'])->send($email);
         // -------------------------------------------------------
-
-        /**
-         * Enviando resposta para o frontend
-         */
-        $this->resposta(200, true, "Escola cadastrada com sucesso");
-        // -------------------------------------------------------
+        $this->resposta(200, true, "O aluno foi cadastro com sucesso");
     }
 
     /**
@@ -155,7 +147,7 @@ class EscolaController extends Controller
      */
     public function show(string $id)
     {
-        return Escola::findOrFail($id);
+        return Aluno::findOrFail($id);
     }
 
     /**
@@ -180,8 +172,5 @@ class EscolaController extends Controller
     public function destroy(string $id)
     {
         //
-    }
-    public function escolas(){
-        return Escola::all();
     }
 }

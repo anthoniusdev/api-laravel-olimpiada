@@ -1,5 +1,7 @@
 <?php
 
+use App\Mail\DadosAluno;
+use App\Mail\DadosEscola;
 use Illuminate\Support\Facades\Route;
 
 /*

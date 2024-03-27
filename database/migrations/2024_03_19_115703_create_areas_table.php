@@ -11,15 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('escolas', function (Blueprint $table) {
-            $table->string('id_escola')->primary();
+        Schema::create('areas', function (Blueprint $table) {
+            $table->string('id')->primary();
             $table->string('nome');
-            $table->string('CNPJ')->unique();
-            $table->string('telefone');
-            $table->string('email');
-            $table->string('usuario')->unique();
-            $table->string('senha');
-            $table->string('codigo_escola')->unique();
             $table->timestamps();
         });
     }
@@ -29,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('escolas');
+        Schema::dropIfExists('areas');
     }
 };
