@@ -8,8 +8,10 @@ use Illuminate\Support\Str;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\DadosAluno;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Redis;
 
 class AlunoController extends Controller
 {
@@ -44,10 +46,11 @@ class AlunoController extends Controller
         /** 
          * Tratando dados do react para se encaixar na API
          */
+
         $request->merge(['codigo_escola' => $request['codigoEscola']]);
         $request->request->remove('codigoEscola');
         // -------------------------------------------------------
-        
+
         /**
          * Buscando a ID da área no banco de dados pelo nome 
          */
@@ -56,8 +59,8 @@ class AlunoController extends Controller
             $id_area = DB::select("SELECT id FROM areas WHERE nome = ?", [$area]);
             $id_area = !empty($id_area) ? $id_area[0]->id : null;
             $request->merge(['id_area' => $id_area]);
-        }else{
-            $this->resposta(500, false, "Área não escolhida");
+        } else {
+            abort(500, 'Área não escolhida');
         }
         // -------------------------------------------------------
         /**
@@ -68,8 +71,8 @@ class AlunoController extends Controller
             $id_modalidade = DB::select("SELECT id FROM modalidades WHERE sigla = ?", [$sigla_modalidade]);
             $id_modalidade = !empty($id_modalidade) ? $id_modalidade[0]->id : null;
             $request->merge(['id_modalidade' => $id_modalidade]);
-        }else{
-            $this->resposta(500, false, "Modalidade não escolhida");
+        } else {
+            abort(500, 'Modalidade não escolhida');
         }
         // -------------------------------------------------------
 
@@ -182,6 +185,21 @@ class AlunoController extends Controller
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
+    {
+        //
+    }
+
+    public function login(Request $request)
+    {
+        if (Auth::attempt($request->only('username', 'password'))) {
+            return $this->resposta(200, true, [
+                'token' => $request->user()->createToken('loginAluno')->plainTextToken
+            ]);
+        } else {
+            abort(401, 'Credenciais incorretas');
+        }
+    }
+    public function logout(Request $request)
     {
         //
     }
