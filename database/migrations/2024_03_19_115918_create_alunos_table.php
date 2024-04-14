@@ -20,8 +20,9 @@ return new class extends Migration
             $table->string('cpf')->uniqiue();
             $table->string('codigo_escola');
             $table->string('id_area');
-            $table->string('modalidade');
+            $table->string('id_modalidade');
             $table->foreign('id_area')->references('id')->on('areas')->cascadeOnDelete();
+            $table->foreign('id_modalidade')->references('id')->on('modalidades')->cascadeOnDelete();
             $table->foreign('codigo_escola')->references('codigo_escola')->on('escolas')->cascadeOnDelete();
             $table->timestamps();
         });

@@ -6,6 +6,7 @@ use App\Http\Controllers\CPFController;
 use App\Http\Controllers\EscolaController;
 use App\Http\Controllers\TesteController;
 use App\Mail\EscolaDados;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 
@@ -14,13 +15,14 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('/escola')->group(function(){
     Route::post('/cadastro', [EscolaController::class, 'store']);
-    Route::post('/login', [AuthController::class, 'loginEscola']);
+    Route::post('/login', [EscolaController::class, 'login']);
     Route::middleware('auth:sanctum')->group(function(){
         Route::get('/escolas', [EscolaController::class, 'escolas']); // Teste de autenticação
     });
 });
 Route::prefix('/aluno')->group(function(){
     Route::post('/cadastro', [AlunoController::class, 'store']);
+    Route::post('/login', [AlunoController::class, 'login']);
 });
 
 // // Rotas para verificar

@@ -6,6 +6,7 @@ use App\Mail\DadosEscola;
 use Illuminate\Http\Request;
 use App\Models\Escola;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -180,6 +181,16 @@ class EscolaController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+    public function login(Request $request)
+    {
+        if (Auth::attempt($request->only('username', 'password'))) {
+            return $this->resposta(200, true, [
+                'token' => $request->user()->createToken('loginEscola')->plainTextToken
+            ]);
+        } else {
+            abort(401, 'Credenciais incorretas');
+        }
     }
     public function escolas(){
         return Escola::all();
