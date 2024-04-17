@@ -192,7 +192,4 @@ class EscolaController extends Controller
             abort(401, 'Credenciais incorretas');
         }
     }
-    public function escolas(){
-        return Escola::all();
-    }
 }

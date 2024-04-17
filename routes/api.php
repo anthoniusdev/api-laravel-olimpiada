@@ -6,21 +6,22 @@ use App\Http\Controllers\CPFController;
 use App\Http\Controllers\EscolaController;
 use App\Http\Controllers\TesteController;
 use App\Mail\EscolaDados;
+use App\Models\Aluno;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 
-// Rotas protegidas
-// Route::middleware('auth:')
-
-Route::prefix('/escola')->group(function(){
-    Route::post('/cadastro', [EscolaController::class, 'store']);
-    Route::post('/login', [EscolaController::class, 'login']);
-    Route::middleware('auth:sanctum')->group(function(){
-        Route::get('/escolas', [EscolaController::class, 'escolas']); // Teste de autenticação
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/verify-login', function () {
+        return ["isAuthenticated" => true];
     });
 });
-Route::prefix('/aluno')->group(function(){
+
+Route::prefix('/escola')->group(function () {
+    Route::post('/cadastro', [EscolaController::class, 'store']);
+    Route::post('/login', [EscolaController::class, 'login']);
+});
+Route::prefix('/aluno')->group(function () {
     Route::post('/cadastro', [AlunoController::class, 'store']);
     Route::post('/login', [AlunoController::class, 'login']);
 });
@@ -32,10 +33,10 @@ Route::prefix('/aluno')->group(function(){
 // });
 
 // Rota para obter as imagens
-Route::prefix('/img')->group(function(){
+Route::prefix('/img')->group(function () {
     // Rota para obter as imagens publicas
-    Route::prefix('/public')->group(function(){
-        Route::get('/logo', function(){
+    Route::prefix('/public')->group(function () {
+        Route::get('/logo', function () {
             return response()->file(public_path('mail/logo3.png'));
         });
     });
