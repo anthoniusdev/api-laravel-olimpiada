@@ -159,27 +159,12 @@ class EscolaController extends Controller
     {
         //
     }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
     public function login(Request $request)
     {
         if (Auth::attempt($request->only('username', 'password'))) {
             return $this->resposta(200, true, [
-                'token' => $request->user()->createToken('loginEscola')->plainTextToken
+                'token' => $request->user()->createToken('loginEscola')->plainTextToken,
+                'dadosEscola' => Escola::where('usuario', $request['username'])->first()->makeHidden('senha', 'id', 'created_at', 'updated_at')
             ]);
         } else {
             abort(401, 'Credenciais incorretas');
