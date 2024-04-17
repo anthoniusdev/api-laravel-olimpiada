@@ -47,18 +47,11 @@ class EscolaController extends Controller
         $request->request->remove('cpfResponsavel');
         // -------------------------------------------------------
 
-        /**
-         * Buscando a ID da área no banco de dados pelo nome 
-         */
         if (count($request['areas']) > 0) {
             $areas = $request['areas'];
-            $id_area1 = DB::select("SELECT id FROM areas WHERE nome = ?", [$areas[0]]);
-            $id_area1 = !empty($id_area1) ? $id_area1[0]->id : null;
-            $request->merge(['id_area1' => $id_area1]);
-            if (count($areas) > 1) {
-                $id_area2 = DB::select("SELECT id FROM areas WHERE nome = ?", [$areas[1]]);
-                $id_area2 = !empty($id_area2) ? $id_area2[0]->id : null;
-                $request->merge(['id_area2' => $id_area2]);
+            $request->merge(['id_area1' => $areas[0]]);
+            if (count($request['areas']) == 2) {
+                $request->merge(['id_area2' => $areas[1]]);
             }
         }
         // -------------------------------------------------------
