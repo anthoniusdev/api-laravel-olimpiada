@@ -14,8 +14,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('areas', function (Blueprint $table) {
-            $nomes_area = ['Química', 'Física', 'História', 'Arte e Cultura', 'Meio Ambiente e Sustentabilidade', 'Empreendorismo e Inovação'];
-            for ($i = 0; $i <= 5; $i++) {
+            $nomes_area = ['Química', 'Física', 'História', 'Empreendorismo e Inovação'];
+            for ($i = 0; $i <= 3; $i++) {
                 $id_area = Str::random();
                 DB::table('areas')->insert([
                     'id' => $id_area,
