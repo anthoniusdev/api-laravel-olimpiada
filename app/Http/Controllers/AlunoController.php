@@ -184,16 +184,18 @@ class AlunoController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function getData()
     {
-        //
+        $retorno = Aluno::select('usuario', 'nome', 'email', 'id_area', 'codigo_escola', 'cpf')->get();
+        return $retorno;
     }
 
     public function login(Request $request)
     {
         if (Auth::attempt($request->only('username', 'password'))) {
             return $this->resposta(200, true, [
-                'token' => $request->user()->createToken('loginAluno')->plainTextToken
+                'token' => $request->user()->createToken('loginAluno')->plainTextToken,
+                'dadosAluno' => Aluno::where('usuario', $request['username'])->first()->makeHidden('id', 'senha', 'created_at', 'updated_at')
             ]);
         } else {
             abort(401, 'Credenciais incorretas');

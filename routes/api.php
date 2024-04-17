@@ -20,10 +20,16 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::prefix('/escola')->group(function () {
     Route::post('/cadastro', [EscolaController::class, 'store']);
     Route::post('/login', [EscolaController::class, 'login']);
+    Route::middleware('auth:sanctum')->group(function(){
+        //
+    });
 });
 Route::prefix('/aluno')->group(function () {
     Route::post('/cadastro', [AlunoController::class, 'store']);
     Route::post('/login', [AlunoController::class, 'login']);
+    Route::middleware('auth:sanctum')->group(function(){
+        //
+    });
 });
 
 // // Rotas para verificar
