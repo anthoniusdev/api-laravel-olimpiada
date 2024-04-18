@@ -62,20 +62,6 @@ class AlunoController extends Controller
         } else {
             abort(500, 'Área não escolhida');
         }
-        // -------------------------------------------------------
-        /**
-         * Buscando a ID da modalide no banco de dados pela sigla 
-         */
-        if ($request['modalidade']) {
-            $sigla_modalidade = $request['modalidade'];
-            $id_modalidade = DB::select("SELECT id FROM modalidades WHERE sigla = ?", [$sigla_modalidade]);
-            $id_modalidade = !empty($id_modalidade) ? $id_modalidade[0]->id : null;
-            $request->merge(['id_modalidade' => $id_modalidade]);
-        } else {
-            abort(500, 'Modalidade não escolhida');
-        }
-        // -------------------------------------------------------
-
         /** 
          * Gerando o usuário para o aluno de forma automática 
          */
