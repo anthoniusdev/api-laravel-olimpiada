@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('email');
             $table->string('id_area1')->nullable()->default(null);
             $table->string('id_area2')->nullable()->default(null);
-            $table->string('cnpj')->unique();
+            $table->string('cnpj')->nullable()->default(null);
             $table->string('telefone');
             $table->string('codigo_escola')->unique();
             $table->string('nome_responsavel');
