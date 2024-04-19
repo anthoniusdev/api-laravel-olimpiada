@@ -21,7 +21,7 @@ Route::prefix('/escola')->group(function () {
     Route::post('/cadastro', [EscolaController::class, 'store']);
     Route::post('/login', [EscolaController::class, 'login']);
     Route::middleware('auth:sanctum')->group(function(){
-        //
+        Route::get('/alunos-cadastrados', [EscolaController::class, 'getAlunos']);
     });
 });
 Route::prefix('/aluno')->group(function () {

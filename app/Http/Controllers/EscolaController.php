@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\DadosEscola;
+use App\Models\Aluno;
 use App\Models\Area;
 use Illuminate\Http\Request;
 use App\Models\Escola;
@@ -176,4 +177,8 @@ class EscolaController extends Controller
             abort(401, 'Credenciais incorretas');
         }
     }
+    public function getAlunos(Request $request){
+        $alunos = Aluno::select('nome', 'email')->where('codigo_escola', $request['codigo_escola'])->get();
+        return $alunos;
+    }   
 }
