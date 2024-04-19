@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\DadosEscola;
+use App\Models\Area;
 use Illuminate\Http\Request;
 use App\Models\Escola;
 use App\Models\User;
@@ -162,9 +163,14 @@ class EscolaController extends Controller
     public function login(Request $request)
     {
         if (Auth::attempt($request->only('username', 'password'))) {
+            $dadosEscola = Escola::where('usuario', $request['username'])->first()->makeHidden('senha', 'id', 'created_at', 'updated_at');
+            $area1 = Area::select('nome')->where('id', $dadosEscola['id_area1'])->get();
+            $area2 = Area::select('nome')->where('id', $dadosEscola['id_area2'])->get();
+            $dadosEscola->area1 = $area1;
+            $dadosEscola->area2 = $area2;
             return $this->resposta(200, true, [
                 'token' => $request->user()->createToken('loginEscola')->plainTextToken,
-                'dadosEscola' => Escola::where('usuario', $request['username'])->first()->makeHidden('senha', 'id', 'created_at', 'updated_at')
+                'dadosEscola' => $dadosEscola
             ]);
         } else {
             abort(401, 'Credenciais incorretas');

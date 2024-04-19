@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\DadosAluno;
+use App\Models\Area;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -55,10 +56,7 @@ class AlunoController extends Controller
          * Buscando a ID da área no banco de dados pelo nome 
          */
         if ($request['area']) {
-            $area = $request['area'];
-            $id_area = DB::select("SELECT id FROM areas WHERE nome = ?", [$area]);
-            $id_area = !empty($id_area) ? $id_area[0]->id : null;
-            $request->merge(['id_area' => $id_area]);
+            $request->merge(['id_area' => $request['area']]);
         } else {
             abort(500, 'Área não escolhida');
         }
@@ -179,9 +177,12 @@ class AlunoController extends Controller
     public function login(Request $request)
     {
         if (Auth::attempt($request->only('username', 'password'))) {
+            $dadosAluno = Aluno::where('usuario', $request['username'])->first()->makeHidden('id', 'senha', 'created_at', 'updated_at');
+            $area1 = Area::select('nome')->where('id', $dadosAluno['id_area'])->get();
+            $dadosAluno->area = $area1;
             return $this->resposta(200, true, [
                 'token' => $request->user()->createToken('loginAluno')->plainTextToken,
-                'dadosAluno' => Aluno::where('usuario', $request['username'])->first()->makeHidden('id', 'senha', 'created_at', 'updated_at')
+                'dadosAluno' => $dadosAluno 
             ]);
         } else {
             abort(401, 'Credenciais incorretas');
