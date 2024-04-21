@@ -165,10 +165,12 @@ class EscolaController extends Controller
     {
         if (Auth::attempt($request->only('username', 'password'))) {
             $dadosEscola = Escola::where('usuario', $request['username'])->first()->makeHidden('senha', 'id', 'created_at', 'updated_at');
-            $area1 = Area::select('nome')->where('id', $dadosEscola['id_area1'])->get();
-            $area2 = Area::select('nome')->where('id', $dadosEscola['id_area2'])->get();
-            $dadosEscola->area1 = $area1;
-            $dadosEscola->area2 = $area2;
+            $area1 = Area::select('nome')->where('id', $dadosEscola['id_area1'])->first();
+            $area2 = Area::select('nome')->where('id', $dadosEscola['id_area2'])->first();
+            $dadosEscola->area1 = $area1['nome'];
+            if ($area2) {
+                $dadosEscola->area2 = $area2['nome'];
+            }
             return $this->resposta(200, true, [
                 'token' => $request->user()->createToken('loginEscola')->plainTextToken,
                 'dadosEscola' => $dadosEscola
@@ -177,8 +179,9 @@ class EscolaController extends Controller
             abort(401, 'Credenciais incorretas');
         }
     }
-    public function getAlunos(Request $request){
+    public function getAlunos(Request $request)
+    {
         $alunos = Aluno::select('nome', 'email')->where('codigo_escola', $request['codigo_escola'])->get();
         return $alunos;
-    }   
+    }
 }
