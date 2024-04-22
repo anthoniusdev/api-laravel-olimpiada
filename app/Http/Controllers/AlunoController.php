@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\DadosAluno;
 use App\Models\Area;
+use App\Models\Escola;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -178,8 +179,14 @@ class AlunoController extends Controller
     {
         if (Auth::attempt($request->only('username', 'password'))) {
             $dadosAluno = Aluno::where('usuario', $request['username'])->first()->makeHidden('id', 'senha', 'created_at', 'updated_at');
+            $nomeEscola = Escola::select('nome')->where('codigo_escola', $dadosAluno['codigo_escola'])->first();
+            if ($nomeEscola !== null) {
+                $dadosAluno->nomeEscola = $nomeEscola['nome'];
+            }
             $area1 = Area::select('nome')->where('id', $dadosAluno['id_area'])->first();
-            $dadosAluno->area = $area1['nome'];
+            if ($area1 !== null) {
+                $dadosAluno->area = $area1['nome'];
+            }
             return $this->resposta(200, true, [
                 'token' => $request->user()->createToken('loginAluno')->plainTextToken,
                 'dadosAluno' => $dadosAluno
