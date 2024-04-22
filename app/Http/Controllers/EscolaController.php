@@ -165,11 +165,13 @@ class EscolaController extends Controller
     {
         if (Auth::attempt($request->only('username', 'password'))) {
             $dadosEscola = Escola::where('usuario', $request['username'])->first()->makeHidden('senha', 'id', 'created_at', 'updated_at');
-            $area1 = Area::select('nome')->where('id', $dadosEscola['id_area1'])->first()['nome'];
+            $area1 = Area::select('nome')->where('id', $dadosEscola['id_area1'])->first();
+            if ($area1 !== null) {
+                $dadosEscola->area1 = $area1['nome'];
+            }
             $area2 = Area::select('nome')->where('id', $dadosEscola['id_area2'])->first()['nome'];
-            $dadosEscola->area1 = $area1;
-            if ($area2) {
-                $dadosEscola->area2 = $area2;
+            if ($area2 !== null) {
+                $dadosEscola->area2 = $area2['nome'];
             }
             return $this->resposta(200, true, [
                 'token' => $request->user()->createToken('loginEscola')->plainTextToken,
