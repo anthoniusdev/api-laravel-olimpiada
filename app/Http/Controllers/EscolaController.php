@@ -184,11 +184,13 @@ class EscolaController extends Controller
         $user = Auth::user();
         $escola = Escola::select('codigo_escola')->where('usuario', $user['username'])->first()['codigo_escola'];
         $alunos = Aluno::select('nome', 'email', 'modalidade', 'id_area')->where('codigo_escola', $escola)->get();
-        foreach ($alunos as $aluno) {
-            $aluno['area'] = Area::select('nome')->where('id', $aluno['id_area'])->first()['nome'];
+        if ($alunos) {
+            foreach ($alunos as $aluno) {
+                $aluno['area'] = Area::select('nome')->where('id', $aluno['id_area'])->first()['nome'];
+            }
+            unset($alunos['id_area']);
+            return $alunos;
         }
-        unset($alunos['id_area']);
-        return $alunos;
     }
     public function logout(Request $request)
     {

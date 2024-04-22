@@ -7,6 +7,8 @@ use App\Http\Controllers\EscolaController;
 use App\Http\Controllers\TesteController;
 use App\Mail\EscolaDados;
 use App\Models\Aluno;
+use App\Models\Area;
+use App\Models\Escola;
 use GuzzleHttp\Psr7\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
