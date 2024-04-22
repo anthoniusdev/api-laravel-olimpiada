@@ -41,109 +41,117 @@ class EscolaController extends Controller
      */
     public function store(Request $request)
     {
-        /** 
-         * Tratando dados do react para se encaixar na API
-         */
-        $request->merge(['nome_responsavel' => $request['nomeResponsavel'], 'cpf_responsavel' => $request['cpfResponsavel']]);
-        $request->request->remove('nomeResponsavel');
-        $request->request->remove('cpfResponsavel');
-        // -------------------------------------------------------
-
-        if (count($request['areas']) > 0) {
-            $areas = $request['areas'];
-            $request->merge(['id_area1' => $areas[0]]);
-            if (count($request['areas']) == 2) {
-                $request->merge(['id_area2' => $areas[1]]);
-            }
-        }
-        // -------------------------------------------------------
-
-        /** 
-         * Gerando o usuário para a escola de forma automática 
-         */
-        $usuario = $request['nome'];
-        $usuario = str_replace(' ', '', $usuario);
-        $mapeamento = array(
-            'á' => 'a',
-            'à' => 'a',
-            'â' => 'a',
-            'ã' => 'a',
-            'é' => 'e',
-            'è' => 'e',
-            'ê' => 'e',
-            'í' => 'i',
-            'ì' => 'i',
-            'î' => 'i',
-            'ó' => 'o',
-            'ò' => 'o',
-            'ô' => 'o',
-            'õ' => 'o',
-            'ú' => 'u',
-            'ù' => 'u',
-            'û' => 'u',
-            'ç' => 'c',
-        );
-        $usuario = strtr($usuario, $mapeamento);
-        $usuario = Str::lower($usuario);
-        $codigo = rand(1000, 9999);
-        $usuario = $usuario . $codigo;
-        $request->merge(['usuario' => $usuario]);
-        // -------------------------------------------------------
-
-        /** 
-         * Gerando a senha para a escola de forma automática 
-         */
-        $senha = Str::random(20);
-        $senhaHash = Hash::make($senha);
-        $request->merge(['senha' => $senhaHash]);
-        // -------------------------------------------------------
-
-        /** 
-         * Gerando o ID e o código para a escola de forma automática 
-         */
-        $id_escola = Str::uuid();
-        $codigo_escola = Str::random(6);
-        $request->merge(['codigo_escola' => $codigo_escola, 'id' => $id_escola]);
-        // -------------------------------------------------------
-
         /**
-         * Formatando os dados para inserir na tabela user
+         * Verificando se email está repetido
          */
-        $dados_user = [
-            'username' => $usuario,
-            'name' => $request['nome'],
-            'password' => $senhaHash,
-            'tipo' => 'escola',
-            'id' => $id_escola
-        ];
-        // -------------------------------------------------------
+        if (Escola::where('email', $request['email'])->exists()) {
+            abort(422, 'Email já cadastrado');
+        } else {
+            // -------------------------------------------------------
+            /** 
+             * Tratando dados do react para se encaixar na API
+             */
+            $request->merge(['nome_responsavel' => $request['nomeResponsavel'], 'cpf_responsavel' => $request['cpfResponsavel']]);
+            $request->request->remove('nomeResponsavel');
+            $request->request->remove('cpfResponsavel');
+            // -------------------------------------------------------
 
-        User::create($dados_user);
-        Escola::create($request->except('areas'));
+            if (count($request['areas']) > 0) {
+                $areas = $request['areas'];
+                $request->merge(['id_area1' => $areas[0]]);
+                if (count($request['areas']) == 2) {
+                    $request->merge(['id_area2' => $areas[1]]);
+                }
+            }
+            // -------------------------------------------------------
 
-        /*
+            /** 
+             * Gerando o usuário para a escola de forma automática 
+             */
+            $usuario = $request['nome'];
+            $usuario = str_replace(' ', '', $usuario);
+            $mapeamento = array(
+                'á' => 'a',
+                'à' => 'a',
+                'â' => 'a',
+                'ã' => 'a',
+                'é' => 'e',
+                'è' => 'e',
+                'ê' => 'e',
+                'í' => 'i',
+                'ì' => 'i',
+                'î' => 'i',
+                'ó' => 'o',
+                'ò' => 'o',
+                'ô' => 'o',
+                'õ' => 'o',
+                'ú' => 'u',
+                'ù' => 'u',
+                'û' => 'u',
+                'ç' => 'c',
+            );
+            $usuario = strtr($usuario, $mapeamento);
+            $usuario = Str::lower($usuario);
+            $codigo = rand(1000, 9999);
+            $usuario = $usuario . $codigo;
+            $request->merge(['usuario' => $usuario]);
+            // -------------------------------------------------------
+
+            /** 
+             * Gerando a senha para a escola de forma automática 
+             */
+            $senha = Str::random(20);
+            $senhaHash = Hash::make($senha);
+            $request->merge(['senha' => $senhaHash]);
+            // -------------------------------------------------------
+
+            /** 
+             * Gerando o ID e o código para a escola de forma automática 
+             */
+            $id_escola = Str::uuid();
+            $codigo_escola = Str::random(6);
+            $request->merge(['codigo_escola' => $codigo_escola, 'id' => $id_escola]);
+            // -------------------------------------------------------
+
+            /**
+             * Formatando os dados para inserir na tabela user
+             */
+            $dados_user = [
+                'username' => $usuario,
+                'name' => $request['nome'],
+                'password' => $senhaHash,
+                'tipo' => 'escola',
+                'id' => $id_escola
+            ];
+            // -------------------------------------------------------
+
+            User::create($dados_user);
+            Escola::create($request->except('areas'));
+
+            /*
          * Enviando email com dados gerados automaticamente para escola
          */
-        $nomeEscola = $request['nome'];
-        $dados = [
-            'nomeResponsavel' => $request['nome_responsavel'],
-            'nomeEscola' => $nomeEscola,
-            'codigo' => $request['codigo_escola'],
-            'usuario' => $request['usuario'],
-            'senha' => $senha,
-            'linkPortal' => 'http://localhost:5173/',
-            'linkEmailDuvida' => "mailto:support@olimpiadasdosertaoprodutivo.com?subject=$nomeEscola - Dúvida em relação a Olímpiadas",
-            'linkLogo' =>  'http://localhost:8000/api/img/public/logo'
-        ];
-        $email = new DadosEscola($dados);
-        Mail::to($request['email'])->send($email);
-        // -------------------------------------------------------
+            $nomeEscola = $request['nome'];
+            $dados = [
+                'nomeResponsavel' => $request['nome_responsavel'],
+                'nomeEscola' => $nomeEscola,
+                'codigo' => $request['codigo_escola'],
+                'usuario' => $request['usuario'],
+                'senha' => $senha,
+                'linkPortal' => 'http://localhost:5173/',
+                'linkEmailDuvida' => "mailto:support@olimpiadasdosertaoprodutivo.com?subject=$nomeEscola - Dúvida em relação a Olímpiadas",
+                'linkLogo' =>  'http://localhost:8000/api/img/public/logo'
+            ];
+            $email = new DadosEscola($dados);
+            Mail::to($request['email'])->send($email);
+            // -------------------------------------------------------
 
-        /**
-         * Enviando resposta para o frontend
-         */
-        $this->resposta(200, true, "Escola cadastrada com sucesso");
-        // -------------------------------------------------------
+            /**
+             * Enviando resposta para o frontend
+             */
+            $this->resposta(200, true, "Escola cadastrada com sucesso");
+            // -------------------------------------------------------
+        }
     }
 
     /**
