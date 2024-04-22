@@ -45,7 +45,7 @@ class EscolaController extends Controller
          * Verificando se email está repetido
          */
         if (Escola::where('email', $request['email'])->exists()) {
-            abort(422, 'Email já cadastrado');
+            return $this->resposta(422, false, 'Este email já foi cadastrado');
         } else {
             // -------------------------------------------------------
             /** 
