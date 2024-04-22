@@ -182,8 +182,11 @@ class EscolaController extends Controller
     public function getAlunos()
     {
         $user = Auth::user();
-        $escola = Escola::select('codigo_escola')->where('usuario', $user['username'])->first()['codigo_escola'];
-        $alunos = Aluno::select('nome', 'email', 'modalidade', 'id_area')->where('codigo_escola', $escola)->get();
+        $escola = Escola::select('codigo_escola')->where('usuario', $user['username'])->first();
+        if($escola != null){
+            $codigo_escola = $escola['codigo_escola'];
+        }
+        $alunos = Aluno::select('nome', 'email', 'modalidade', 'id_area')->where('codigo_escola', $codigo_escola)->get();
         if ($alunos) {
             foreach ($alunos as $aluno) {
                 $aluno['area'] = Area::select('nome')->where('id', $aluno['id_area'])->first()['nome'];
