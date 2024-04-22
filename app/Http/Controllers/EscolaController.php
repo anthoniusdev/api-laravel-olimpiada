@@ -165,11 +165,11 @@ class EscolaController extends Controller
     {
         if (Auth::attempt($request->only('username', 'password'))) {
             $dadosEscola = Escola::where('usuario', $request['username'])->first()->makeHidden('senha', 'id', 'created_at', 'updated_at');
-            $area1 = Area::select('nome')->where('id', $dadosEscola['id_area1'])->first();
-            $area2 = Area::select('nome')->where('id', $dadosEscola['id_area2'])->first();
-            $dadosEscola->area1 = $area1['nome'];
+            $area1 = Area::select('nome')->where('id', $dadosEscola['id_area1'])->first()['nome'];
+            $area2 = Area::select('nome')->where('id', $dadosEscola['id_area2'])->first()['nome'];
+            $dadosEscola->area1 = $area1;
             if ($area2) {
-                $dadosEscola->area2 = $area2['nome'];
+                $dadosEscola->area2 = $area2;
             }
             return $this->resposta(200, true, [
                 'token' => $request->user()->createToken('loginEscola')->plainTextToken,
@@ -179,9 +179,19 @@ class EscolaController extends Controller
             abort(401, 'Credenciais incorretas');
         }
     }
-    public function getAlunos(Request $request)
+    public function getAlunos()
     {
-        $alunos = Aluno::select('nome', 'email')->where('codigo_escola', $request['codigo_escola'])->get();
+        $user = Auth::user();
+        $escola = Escola::select('codigo_escola')->where('usuario', $user['username'])->first()['codigo_escola'];
+        $alunos = Aluno::select('nome', 'email', 'modalidade', 'id_area')->where('codigo_escola', $escola)->get();
+        foreach ($alunos as $aluno) {
+            $aluno['area'] = Area::select('nome')->where('id', $aluno['id_area'])->first()['nome'];
+        }
+        unset($alunos['id_area']);
         return $alunos;
+    }
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
     }
 }
