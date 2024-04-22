@@ -178,11 +178,11 @@ class AlunoController extends Controller
     {
         if (Auth::attempt($request->only('username', 'password'))) {
             $dadosAluno = Aluno::where('usuario', $request['username'])->first()->makeHidden('id', 'senha', 'created_at', 'updated_at');
-            $area1 = Area::select('nome')->where('id', $dadosAluno['id_area'])->get();
-            $dadosAluno->area = $area1;
+            $area1 = Area::select('nome')->where('id', $dadosAluno['id_area'])->first();
+            $dadosAluno->area = $area1['nome'];
             return $this->resposta(200, true, [
                 'token' => $request->user()->createToken('loginAluno')->plainTextToken,
-                'dadosAluno' => $dadosAluno 
+                'dadosAluno' => $dadosAluno
             ]);
         } else {
             abort(401, 'Credenciais incorretas');
@@ -190,6 +190,6 @@ class AlunoController extends Controller
     }
     public function logout(Request $request)
     {
-        //
+        $request->user()->currentAccessToken()->delete();
     }
 }
