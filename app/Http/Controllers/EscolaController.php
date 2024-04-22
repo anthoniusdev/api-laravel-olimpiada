@@ -179,14 +179,9 @@ class EscolaController extends Controller
             abort(401, 'Credenciais incorretas');
         }
     }
-    public function getAlunos()
+    public function getAlunos(Request $request)
     {
-        $user = Auth::user();
-        $escola = Escola::select('codigo_escola')->where('usuario', $user['username'])->first();
-        if($escola != null){
-            $codigo_escola = $escola['codigo_escola'];
-        }
-        $alunos = Aluno::select('nome', 'email', 'modalidade', 'id_area')->where('codigo_escola', $codigo_escola)->get();
+        $alunos = Aluno::select('nome', 'email', 'modalidade', 'id_area')->where('codigo_escola', $request['codigo_escola'])->get();
         if ($alunos) {
             foreach ($alunos as $aluno) {
                 $aluno['area'] = Area::select('nome')->where('id', $aluno['id_area'])->first()['nome'];
