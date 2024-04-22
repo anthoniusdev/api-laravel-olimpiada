@@ -169,7 +169,7 @@ class EscolaController extends Controller
             if ($area1 !== null) {
                 $dadosEscola->area1 = $area1['nome'];
             }
-            $area2 = Area::select('nome')->where('id', $dadosEscola['id_area2'])->first()['nome'];
+            $area2 = Area::select('nome')->where('id', $dadosEscola['id_area2'])->first();
             if ($area2 !== null) {
                 $dadosEscola->area2 = $area2['nome'];
             }
