@@ -20,6 +20,7 @@ return [
     'allowed_origins' => [
         'https://olimpiadasdosertaoprodutivo.com',
         'https://olimpiadasdosertaoprodutivo.com/',
+        'https://www.olimpiadasdosertaoprodutivo.com/'
         // Adicione outras origens permitidas conforme necessário
     ],
 
