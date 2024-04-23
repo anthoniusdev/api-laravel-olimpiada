@@ -19,6 +19,7 @@ class Aluno extends Model
         'cpf',
         'codigo_escola',
         'id_area',
+        'id_area2',
         'modalidade',
     ];
 }
