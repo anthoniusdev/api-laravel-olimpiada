@@ -45,101 +45,107 @@ class AlunoController extends Controller
      */
     public function store(Request $request)
     {
-        /** 
-         * Tratando dados do react para se encaixar na API
-         */
-
-        $request->merge(['codigo_escola' => $request['codigoEscola']]);
-        $request->request->remove('codigoEscola');
-        // -------------------------------------------------------
-
-        /**
-         * Buscando a ID da área no banco de dados pelo nome 
-         */
-        if ($request['area']) {
-            $request->merge(['id_area' => $request['area']]);
+        if (Aluno::where('email', $request['email'])->exists()) {
+            return response()->json([
+                'msg' => 'Este email já foi cadastrado'
+            ], 422);
         } else {
-            abort(500, 'Área não escolhida');
-        }
-        /** 
-         * Gerando o usuário para o aluno de forma automática 
-         */
-        $usuario = $request['nome'];
-        $usuario = str_replace(' ', '', $usuario);
-        $mapeamento = array(
-            'á' => 'a',
-            'à' => 'a',
-            'â' => 'a',
-            'ã' => 'a',
-            'é' => 'e',
-            'è' => 'e',
-            'ê' => 'e',
-            'í' => 'i',
-            'ì' => 'i',
-            'î' => 'i',
-            'ó' => 'o',
-            'ò' => 'o',
-            'ô' => 'o',
-            'õ' => 'o',
-            'ú' => 'u',
-            'ù' => 'u',
-            'û' => 'u',
-            'ç' => 'c',
-        );
-        $usuario = strtr($usuario, $mapeamento);
-        $usuario = Str::lower($usuario);
-        $codigo = rand(1000, 9999);
-        $usuario = $usuario . $codigo;
-        $request->merge(['usuario' => $usuario]);
-        // -------------------------------------------------------
+            /** 
+             * Tratando dados do react para se encaixar na API
+             */
 
-        /** 
-         * Gerando a senha para o aluno de forma automática 
-         */
-        $senha = Str::random(20);
-        $senhaHash = Hash::make($senha);
-        $request->merge(['senha' => $senhaHash]);
-        // -------------------------------------------------------
+            $request->merge(['codigo_escola' => $request['codigoEscola']]);
+            $request->request->remove('codigoEscola');
+            // -------------------------------------------------------
 
-        /** 
-         * Gerando o id para o aluno de forma automática 
-         */
-        $id_aluno = Str::uuid();
-        $request->merge(['id' => $id_aluno]);
-        // -------------------------------------------------------
+            if (count($request['areas']) > 0) {
+                $areas = $request['areas'];
+                $request->merge(['id_area' => $areas[0]]);
+                if (count($request['areas']) == 2) {
+                    $request->merge(['id_area2' => $areas[1]]);
+                }
+            }
 
-        /**
-         * Formatando os dados para inserir na tabela user
-         */
-        $dados_user = [
-            'username' => $usuario,
-            'name' => $request['nome'],
-            'password' => $senhaHash,
-            'tipo' => 'aluno',
-            'id' => $id_aluno
-        ];
-        // -------------------------------------------------------
-        User::create($dados_user);
-        Aluno::create($request->all());
+            /** 
+             * Gerando o usuário para o aluno de forma automática 
+             */
+            $usuario = $request['nome'];
+            $usuario = str_replace(' ', '', $usuario);
+            $mapeamento = array(
+                'á' => 'a',
+                'à' => 'a',
+                'â' => 'a',
+                'ã' => 'a',
+                'é' => 'e',
+                'è' => 'e',
+                'ê' => 'e',
+                'í' => 'i',
+                'ì' => 'i',
+                'î' => 'i',
+                'ó' => 'o',
+                'ò' => 'o',
+                'ô' => 'o',
+                'õ' => 'o',
+                'ú' => 'u',
+                'ù' => 'u',
+                'û' => 'u',
+                'ç' => 'c',
+            );
+            $usuario = strtr($usuario, $mapeamento);
+            $usuario = Str::lower($usuario);
+            $codigo = rand(1000, 9999);
+            $usuario = $usuario . $codigo;
+            $request->merge(['usuario' => $usuario]);
+            // -------------------------------------------------------
 
-        /*
+            /** 
+             * Gerando a senha para o aluno de forma automática 
+             */
+            $senha = Str::random(20);
+            $senhaHash = Hash::make($senha);
+            $request->merge(['senha' => $senhaHash]);
+            // -------------------------------------------------------
+
+            /** 
+             * Gerando o id para o aluno de forma automática 
+             */
+            $id_aluno = Str::uuid();
+            $request->merge(['id' => $id_aluno]);
+            // -------------------------------------------------------
+
+            /**
+             * Formatando os dados para inserir na tabela user
+             */
+            $dados_user = [
+                'username' => $usuario,
+                'name' => $request['nome'],
+                'password' => $senhaHash,
+                'tipo' => 'aluno',
+                'id' => $id_aluno
+            ];
+            // -------------------------------------------------------
+            User::create($dados_user);
+            Aluno::create($request->all());
+
+            /*
          * Enviando email com dados gerados automaticamente para o aluno
          */
-        $nomeAluno = $request['nome'];
-        $dados = [
-            'nomeResponsavel' => $request['nome_responsavel'],
-            'nomeAluno' => $nomeAluno,
-            'codigo' => $request['codigo_escola'],
-            'usuario' => $usuario,
-            'senha' => $senha,
-            'linkPortal' => 'http://localhost:5173/',
-            'linkEmailDuvida' => "mailto:support@olimpiadasdosertaoprodutivo.com?subject=$nomeAluno' - Dúvida em relação a Olímpiadas",
-            'linkLogo' =>  'http://localhost:8000/api/img/public/logo'
-        ];
-        $email = new DadosAluno($dados);
-        Mail::to($request['email'])->send($email);
-        // -------------------------------------------------------
-        $this->resposta(200, true, "O aluno foi cadastro com sucesso");
+            $nomeAluno = $request['nome'];
+            $dados = [
+                'nomeResponsavel' => $request['nome_responsavel'],
+                'nomeAluno' => $nomeAluno,
+                'codigo' => $request['codigo_escola'],
+                'usuario' => $usuario,
+                'senha' => $senha,
+                'linkPortal' => 'http://localhost:5173/',
+                'linkEmailDuvida' => "mailto:support@olimpiadasdosertaoprodutivo.com?subject=$nomeAluno' - Dúvida em relação a Olímpiadas",
+                'linkLogo' =>  'http://localhost:8000/api/img/public/logo'
+            ];
+            $email = new DadosAluno($dados);
+            Mail::to($request['email'])->send($email);
+            // -------------------------------------------------------
+            $this->resposta(200, true, "O aluno foi cadastro com sucesso");
+        }
     }
 
     /**
