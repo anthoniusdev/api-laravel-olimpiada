@@ -142,9 +142,9 @@ class AlunoController extends Controller
                 'linkLogo' =>  'http://localhost:8000/api/img/public/logo'
             ];
             $email = new DadosAluno($dados);
-            Mail::to($request['email'])->send($email);
+            // Mail::to($request['email'])->send($email);
             // -------------------------------------------------------
-            $this->resposta(200, true, "O aluno foi cadastro com sucesso");
+            return response()->json(["msg" => "O aluno foi cadastro com sucesso"], 200);
         }
     }
 
@@ -184,7 +184,7 @@ class AlunoController extends Controller
     public function login(Request $request)
     {
         if (Auth::attempt($request->only('username', 'password'))) {
-            $dadosAluno = Aluno::where('usuario', $request['username'])->first()->makeHidden('id', 'senha', 'created_at', 'updated_at');
+            $dadosAluno = Aluno::where('usuario', $request['username'])->first()->makeHidden('senha', 'created_at', 'updated_at');
             $nomeEscola = Escola::select('nome')->where('codigo_escola', $dadosAluno['codigo_escola'])->first();
             if ($nomeEscola !== null) {
                 $dadosAluno->nomeEscola = $nomeEscola['nome'];
