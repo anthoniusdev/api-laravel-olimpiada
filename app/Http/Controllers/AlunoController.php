@@ -190,15 +190,21 @@ class AlunoController extends Controller
                 $dadosAluno->nomeEscola = $nomeEscola['nome'];
             }
             $area1 = Area::select('nome')->where('id', $dadosAluno['id_area'])->first();
+            $area2 = Area::select('nome')->where('id', $dadosAluno['id_area2'])->first();
             if ($area1 !== null) {
-                $dadosAluno->area = $area1['nome'];
+                $dadosAluno->area1 = $area1['nome'];
+            }
+            if($area2 !== null){
+                $dadosAluno->area2 = $area2['nome'];
+            }else{
+               
             }
             return $this->resposta(200, true, [
                 'token' => $request->user()->createToken('loginAluno')->plainTextToken,
                 'dadosAluno' => $dadosAluno
             ]);
         } else {
-            abort(401, 'Credenciais incorretas');
+            return response()->json(['msg' => 'Credenciais incorretas'], 401);
         }
     }
     public function logout(Request $request)
