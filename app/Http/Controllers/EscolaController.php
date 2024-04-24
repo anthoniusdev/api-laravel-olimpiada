@@ -204,7 +204,6 @@ class EscolaController extends Controller
                 if ($area2 !== null) {
                     $aluno['area2'] = $area2['nome'];
                 }
-                unset($aluno['id_area'], $aluno['id_area2']);
             }
             return $alunos;
         }
