@@ -21,7 +21,8 @@ return [
         'https://olimpiadasdosertaoprodutivo.com',
         'https://olimpiadasdosertaoprodutivo.com/',
         'https://www.olimpiadasdosertaoprodutivo.com/',
-        'https://www.olimpiadasdosertaoprodutivo.com'
+        'https://www.olimpiadasdosertaoprodutivo.com',
+        'https://olimpiadas-cientificas.vercel.app'
         // Adicione outras origens permitidas conforme necessário
     ],
 
