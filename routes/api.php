@@ -33,9 +33,10 @@ Route::prefix('/aluno')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/cadastro', [AlunoController::class, 'store']);
         Route::post('/logout', [AlunoController::class, 'logout']);
+        Route::put('/update', [AlunoController::class, 'update']);
+        Route::delete('/delete', [AlunoController::class, 'delete']);
     });
 });
-
 // // Rotas para verificar
 // Route::prefix('/verify')->group(function(){
 //     Route::post('/cpf', [CPFController::class, 'validarCPF']);

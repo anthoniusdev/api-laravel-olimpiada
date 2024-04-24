@@ -193,7 +193,7 @@ class EscolaController extends Controller
     }
     public function getAlunos(Request $request)
     {
-        $alunos = Aluno::select('id', 'nome', 'email', 'modalidade', 'id_area')->where('codigo_escola', $request['codigo_escola'])->get();
+        $alunos = Aluno::select('nome', 'email','cpf', 'modalidade', 'id_area')->where('codigo_escola', $request['codigo_escola'])->get();
         if ($alunos) {
             foreach ($alunos as $aluno) {
                 $area1 = Area::select('nome')->where('id', $aluno['id_area'])->first();
@@ -204,8 +204,8 @@ class EscolaController extends Controller
                 if ($area2 !== null) {
                     $aluno['area2'] = $area2['nome'];
                 }
+                unset($aluno['id_area'], $aluno['id_area2']);
             }
-            unset($alunos['id_area'], $alunos['id_area2']);
             return $alunos;
         }
     }

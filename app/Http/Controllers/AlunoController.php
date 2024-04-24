@@ -49,7 +49,10 @@ class AlunoController extends Controller
             return response()->json([
                 'msg' => 'Este email já foi cadastrado'
             ], 422);
-        } else {
+        }else if(Aluno::where('cpf', $request['cpf'])->exists()){
+            return response()->json(['msg' => 'Este CPF já foi cadastrado', 422]);
+        } 
+        else {
             /** 
              * Tratando dados do react para se encaixar na API
              */
@@ -169,7 +172,18 @@ class AlunoController extends Controller
      */
     public function update(Request $request)
     {
-        Aluno::findOrFail($request['id']);
+        $aluno = Aluno::where('cpf', $request['cpf'])->first();
+        $aluno['nome'] = $request['nome'];
+        $aluno['email'] = $request['email'];
+        $aluno['modalidade'] = $request['modalidade'];
+        $aluno['id_area'] = $request['id_area1'];
+        $aluno['id_area2'] = $request['id_area2'];
+        $aluno->save();
+        return response()->json(["msg" => "Cadastro do Aluno(a) $aluno->nome atualizado com sucesso"], 200);
+    }
+    public function delete(Request $request) {
+        Aluno::where('cpf', $request['cpf'])->first()->delete();
+        return response()->json(["msg" => "Aluno(a) deletado(a) com sucesso"], 200);
     }
 
     /**
@@ -210,5 +224,11 @@ class AlunoController extends Controller
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
+    }
+    public static function retornaID($cpf){
+        $id = DB::select('SELECT id FROM alunos WHERE cpf = ?', [$cpf]);
+        foreach ($id as $ids) {
+            return ["id" => $ids->id];
+        };
     }
 }
