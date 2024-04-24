@@ -145,7 +145,7 @@ class AlunoController extends Controller
                 'linkLogo' =>  'http://localhost:8000/api/img/public/logo'
             ];
             $email = new DadosAluno($dados);
-            // Mail::to($request['email'])->send($email);
+            Mail::to($request['email'])->send($email);
             // -------------------------------------------------------
             return response()->json(["msg" => "O aluno foi cadastro com sucesso"], 200);
         }
