@@ -116,6 +116,7 @@ class AlunoController extends Controller
         $codigo = rand(1000, 9999);
         return $usuario . $codigo;
     }
+    
     private function envioEmail($request, $usuario, $senha){
         $nomeAluno = $request->nome;
         $dados = [
