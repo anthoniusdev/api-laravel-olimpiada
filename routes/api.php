@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin;
 use App\Http\Controllers\AlunoController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CPFController;
@@ -14,10 +15,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 
+Route::post('admin/login', [Admin::class, "login"]);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/verify-login', function () {
         return ["isAuthenticated" => true];
     });
+    Route::get('/get/escolas', [Admin::class, "getEscolas"]);
 });
 
 Route::prefix('/escola')->group(function () {
