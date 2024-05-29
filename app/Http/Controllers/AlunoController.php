@@ -9,7 +9,9 @@ use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\DadosAluno;
 use App\Models\Area;
+use App\Models\Assinala;
 use App\Models\Escola;
+use App\Models\Questao;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -49,10 +51,9 @@ class AlunoController extends Controller
             return response()->json([
                 'msg' => 'Este email já foi cadastrado'
             ], 422);
-        }else if(Aluno::where('cpf', $request['cpf'])->exists()){
+        } else if (Aluno::where('cpf', $request['cpf'])->exists()) {
             return response()->json(['msg' => 'Este CPF já foi cadastrado', 422]);
-        } 
-        else {
+        } else {
             /** 
              * Tratando dados do react para se encaixar na API
              */
@@ -181,7 +182,8 @@ class AlunoController extends Controller
         $aluno->save();
         return response()->json(["msg" => "Cadastro do Aluno(a) $aluno->nome atualizado com sucesso"], 200);
     }
-    public function delete(Request $request) {
+    public function delete(Request $request)
+    {
         Aluno::where('cpf', $request['cpf'])->first()->delete();
         return response()->json(["msg" => "Aluno(a) deletado(a) com sucesso"], 200);
     }
@@ -198,37 +200,46 @@ class AlunoController extends Controller
     public function login(Request $request)
     {
         if (Auth::attempt($request->only('username', 'password'))) {
-            $dadosAluno = Aluno::where('usuario', $request['username'])->first()->makeHidden('senha', 'created_at', 'updated_at');
-            $nomeEscola = Escola::select('nome')->where('codigo_escola', $dadosAluno['codigo_escola'])->first();
-            if ($nomeEscola !== null) {
-                $dadosAluno->nomeEscola = $nomeEscola['nome'];
+            $dadosAluno = Aluno::where('usuario', $request['username'])->first();
+            if ($dadosAluno) {
+                $dadosAluno = $dadosAluno->makeHidden('senha', 'created_at', 'updated_at');
+
+                $nomeEscola = Escola::select('nome')->where('codigo_escola', $dadosAluno['codigo_escola'])->first();
+                if ($nomeEscola !== null) {
+                    $dadosAluno->nomeEscola = $nomeEscola['nome'];
+                }
+                $area1 = Area::select('nome')->where('id', $dadosAluno['id_area'])->first();
+                $area2 = Area::select('nome')->where('id', $dadosAluno['id_area2'])->first();
+                if ($area1 !== null) {
+                    $dadosAluno->area1 = $area1['nome'];
+                }
+                if ($area2 !== null) {
+                    $dadosAluno->area2 = $area2['nome'];
+                }
+
+                return $this->resposta(200, true, [
+                    'token' => $request->user()->createToken('loginAluno')->plainTextToken,
+                    'dadosAluno' => $dadosAluno
+                ]);
             }
-            $area1 = Area::select('nome')->where('id', $dadosAluno['id_area'])->first();
-            $area2 = Area::select('nome')->where('id', $dadosAluno['id_area2'])->first();
-            if ($area1 !== null) {
-                $dadosAluno->area1 = $area1['nome'];
-            }
-            if($area2 !== null){
-                $dadosAluno->area2 = $area2['nome'];
-            }else{
-               
-            }
-            return $this->resposta(200, true, [
-                'token' => $request->user()->createToken('loginAluno')->plainTextToken,
-                'dadosAluno' => $dadosAluno
-            ]);
-        } else {
-            return response()->json(['msg' => 'Credenciais incorretas'], 401);
         }
+        return response()->json(['msg' => 'Credenciais incorretas'], 401);
     }
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
     }
-    public static function retornaID($cpf){
+    public static function retornaID($cpf)
+    {
         $id = DB::select('SELECT id FROM alunos WHERE cpf = ?', [$cpf]);
         foreach ($id as $ids) {
             return ["id" => $ids->id];
         };
+    }
+    public function obterQuestao(Request $request)
+    {
+        $assinaladas = Assinala::where('id_aluno', Auth::user()->id)->pluck('id');
+        $questoesNaoRespondidas = Questao::whereNotIn('id', $assinaladas)->get();
+        return json_encode(["questoes" => $questoesNaoRespondidas]);
     }
 }
