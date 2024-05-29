@@ -11,15 +11,15 @@ class Aluno extends Model
 
 
     protected $fillable = [
-        'id',
-        'nome',
-        'email',
-        'usuario',
-        'senha',
-        'cpf',
-        'codigo_escola',
-        'id_area',
-        'id_area2',
-        'modalidade',
+            'id',
+            'nome',
+            'email',
+            'usuario',
+            'senha',
+            'cpf',
+            'codigo_escola',
+            'id_area',
+            'id_area2',
+            'modalidade',
     ];
 }

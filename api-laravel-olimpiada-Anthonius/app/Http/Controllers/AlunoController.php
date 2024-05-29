@@ -25,24 +25,16 @@ class AlunoController extends Controller
             'msg' => $msg
         ]));
     }
-    /**
-     * Display a listing of the resource.
-     */
+
     public function index()
     {
         return Aluno::all();
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         if (Aluno::where('email', $request['email'])->exists()) {
