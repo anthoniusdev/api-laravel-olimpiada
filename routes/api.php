@@ -2,16 +2,7 @@
 
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\AlunoController;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\CPFController;
 use App\Http\Controllers\EscolaController;
-use App\Http\Controllers\TesteController;
-use App\Mail\EscolaDados;
-use App\Models\Aluno;
-use App\Models\Area;
-use App\Models\Escola;
-use GuzzleHttp\Psr7\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 
@@ -38,6 +29,11 @@ Route::prefix('/aluno')->group(function () {
         Route::post('/logout', [AlunoController::class, 'logout']);
         Route::put('/update', [AlunoController::class, 'update']);
         Route::delete('/delete', [AlunoController::class, 'delete']);
+        Route::prefix('/prova')->group(function(){
+            Route::prefix('/questao')->group(function(){
+                Route::get('/', [AlunoController::class, 'obterQuestao']);
+            });
+        });
     });
 });
 // // Rotas para verificar

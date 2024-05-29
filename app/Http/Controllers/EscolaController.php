@@ -190,9 +190,8 @@ class EscolaController extends Controller
                     'dadosEscola' => $dadosEscola
                 ]);
             }
-        } else {
-            return response()->json(['msg' => 'Credenciais incorretas'], 401);
         }
+        return response()->json(['msg' => 'Credenciais incorretas'], 401);
     }
     public function getAlunos(Request $request)
     {
