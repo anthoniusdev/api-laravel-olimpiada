@@ -38,27 +38,32 @@ class QuestaoController extends Controller
      */
     public function store(Request $request)
     {
-        try {
-            $idQuestao = Str::uuid();
-
-            $questao = [
-                'id' => $idQuestao,
-                'titulo' => $request->input('titulo'),
-                'id_prova' => $request->input('id_prova'),
-                'id_fase' => $request->input('id_fase'),
-                'id_alternativa_correta' => $request->input('id_alternativa_correta')
-            ];
-            
-            Questao::create($questao);
+        
+        if(Questao::where('titulo', $request->input('titulo'))->exists()){
+            return response()->json(['msg' => 'Questão já cadastrada!'], 422);
+        }else{
+            try {
+                $idQuestao = Str::uuid();
     
-            $this->resposta(200, true, "Questao cadastrada com sucesso!");
-    
-        } catch (Exception $e) {
-            return response()->json([
-                'ok' => false,
-                'msg' => 'Erro ao cadastrar a Alternativa',
-                'error' => $e->getMessage()
-            ], 500);
+                $questao = [
+                    'id' => $idQuestao,
+                    'titulo' => $request->input('titulo'),
+                    'id_prova' => $request->input('id_prova'),
+                    'id_fase' => $request->input('id_fase'),
+                    'id_alternativa_correta' => $request->input('id_alternativa_correta')
+                ];
+                
+                Questao::create($questao);
+        
+                $this->resposta(200, true, "Questao cadastrada com sucesso!");
+        
+            } catch (Exception $e) {
+                return response()->json([
+                    'ok' => false,
+                    'msg' => 'Erro ao cadastrar a Questão',
+                    'error' => $e->getMessage()
+                ], 500);
+            }
         }
 
     }

@@ -41,33 +41,37 @@ class AlternativaController extends Controller
      */
     public function store(Request $request)
     {
-        // Verificar se o ID da questão existe na tabela questoes
-        $questaoExiste = Questao::where('id', $request->id_questao)->exists();
+        $questao_existe = Questao::where('id', $request->input('id_questao'))->exists();
+        $alternativa_existe = Alternativa::where('texto', $request->input('texto'))->exists();
 
-        if (!$questaoExiste) {
-            return response()->json(['msg' => 'ID da questão inválido'], 422);
+        if (!$questao_existe) {
+            return response()->json(['msg' => 'Questão inexistente'], 422);
+        }else if($alternativa_existe){
+            return response()->json(['msg' => 'Alternativa já existe'], 422);
+        }else{
+            try {
+                $id_alternativa = Str::uuid();
+    
+                $alternativa = [
+                    'id' => $id_alternativa,
+                    'texto' => $request->input('texto'),
+                    'id_questao' => $request->input('id_questao')
+                ];
+        
+                $alternativa = Alternativa::create($alternativa);
+        
+                $this->resposta(200, true, "Alternativa criada com sucesso", $alternativa);
+                
+            } catch (Exception $e) {
+                return response()->json([
+                    'ok' => false,
+                    'msg' => 'Erro ao cadastrar a Alternativa',
+                    'error' => $e->getMessage()
+                ], 500);
+            }
         }
 
-        try {
-            $idAlternativa = Str::uuid();
 
-            $alternativa = [
-                'id' => $idAlternativa,
-                'texto' => $request->input('texto'),
-                'id_questao' => $request->input('id_questao')
-            ];
-    
-            $alternativa = Alternativa::create($alternativa);
-    
-            $this->resposta(200, true, "Alternativa criada com sucesso", $alternativa);
-            
-        } catch (Exception $e) {
-            return response()->json([
-                'ok' => false,
-                'msg' => 'Erro ao cadastrar a Alternativa',
-                'error' => $e->getMessage()
-            ], 500);
-        }
     }
 
     /**

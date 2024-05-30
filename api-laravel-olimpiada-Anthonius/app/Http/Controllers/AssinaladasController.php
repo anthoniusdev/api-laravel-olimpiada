@@ -2,20 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use App\Models\Prova;
+use App\Models\Assinala;
 use Exception;
+use Illuminate\Http\Request;
 
-class ProvaController extends Controller
+class AssinaladasController extends Controller
 {
-    function resposta($codigo, $ok, $msg, $prova)
+    function resposta($codigo, $ok, $msg, $assinalada)
     {
         http_response_code($codigo);
         echo (json_encode([
             'ok' => $ok,
             'msg' => $msg,
-            'fase' => $prova
+            'fase' => $assinalada
         ]));
     }
     /**
@@ -40,28 +39,21 @@ class ProvaController extends Controller
     public function store(Request $request)
     {
         try {
-            $id_prova = Str::uuid();
-
-            $prova = Prova::create(
-                [
-                    'id' => $id_prova,
-                    'id_fase' => $request->input('id_fase'),
-                    'id_area' => $request->input('id_area'),
-                    'modalidade' =>$request->input('modalidade')
-                ]
-            );
-    
-            $this->resposta(200, true, "Prova cadastrada com sucesso!", $prova);
+            $assinala_questao = Assinala::create([
+                'id_aluno' => $request->input('id_aluno'),
+                'id_questao' => $request->input('id_questao'),
+                'id_alternativa_assinalada' => $request->input('id_alternativa_assinalada')
+            ]);
+            $this->resposta(200, true, 'Questao assinalada', $assinala_questao);
+        
         } catch (Exception $e) {
             return response()->json([
                 'ok' => false,
-                'msg' => 'Erro ao cadastrar a Prova',
+                'msg' => 'Erro ao assinalar questão',
                 'error' => $e->getMessage()
             ], 500);
         }
-    } 
-
-
+    }
 
     /**
      * Display the specified resource.

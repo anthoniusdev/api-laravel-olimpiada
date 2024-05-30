@@ -240,8 +240,8 @@ class AlunoController extends Controller
 
     public function obterQuestao(Request $request)
     {
-        $alunoId = Auth::user()->id;
-        $assinaladas = Assinala::where('id_aluno', $alunoId)->pluck('id_questao');
+        $aluno_id = Auth::user()->id;
+        $assinaladas = Assinala::where('id_aluno', $aluno_id)->pluck('id_questao');
         
         $questoesNaoRespondidas = Questao::whereNotIn('id', $assinaladas)->get();
         

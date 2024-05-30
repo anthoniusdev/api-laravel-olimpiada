@@ -6,6 +6,7 @@ use App\Http\Controllers\AlunoController;
 use App\Http\Controllers\EscolaController;
 use App\Http\Controllers\ProvaController;
 use App\Http\Controllers\QuestaoController;
+use App\Http\Controllers\AssinaladasController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -39,6 +40,7 @@ Route::prefix('/aluno')->group(function () {
                 Route::get('/', [AlunoController::class, 'obterQuestao']);
                 Route::post('/add_questao', [QuestaoController::class, 'store']);
                 Route::post('/add_alternativa', [AlternativaController::class, 'store']);
+                Route::post('/assinalar_questao', [AssinaladasController::class, 'store']);
             });
         });
 
