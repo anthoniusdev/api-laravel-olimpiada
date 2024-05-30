@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redis;
 
+
 class AlunoController extends Controller
 {
     function resposta($codigo, $ok, $msg)
@@ -238,25 +239,68 @@ class AlunoController extends Controller
     }
 
 
+    // public function obterQuestaoAleatoria(Request $request)
+    // {
+    //     $aluno_id = Auth::user()->id;
+        
+    //     // Obtém os IDs das questões já assinaladas pelo aluno
+    //     // 'pluck' é usado para obter uma coleção de valores de uma única coluna
+    //     $assinaladas = Assinala::where('id_aluno', $aluno_id)->pluck('id_questao');
+        
+    //     $questoesNaoRespondidas = Questao::whereNotIn('id', $assinaladas)->select('titulo')->get()->toArray();
+        
+    //     if (count($questoesNaoRespondidas) > 0) {
+    //         $tituloAleatorio = $questoesNaoRespondidas[array_rand($questoesNaoRespondidas)]['titulo'];
+    //     } else {
+    //         $tituloAleatorio = null;
+    //     }
+    
+    //     return response()->json(['titulo' => $tituloAleatorio]);
+    // }
+    
+
+    
     public function obterQuestaoAleatoria(Request $request)
     {
+        // Obtém o ID do aluno logado atualmente
         $aluno_id = Auth::user()->id;
-        
-        // Obtém os IDs das questões já assinaladas pelo aluno
-        // 'pluck' é usado para obter uma coleção de valores de uma única coluna
-        $assinaladas = Assinala::where('id_aluno', $aluno_id)->pluck('id_questao');
-        
-        $questoesNaoRespondidas = Questao::whereNotIn('id', $assinaladas)->select('titulo')->get()->toArray();
-        
-        if (count($questoesNaoRespondidas) > 0) {
-            $tituloAleatorio = $questoesNaoRespondidas[array_rand($questoesNaoRespondidas)]['titulo'];
-        } else {
-            $tituloAleatorio = null;
-        }
     
-        return response()->json(['titulo' => $tituloAleatorio]);
+
+        $assinaladas = DB::select('SELECT id_questao FROM assinalas WHERE id_aluno = ?', [$aluno_id]);
+    
+        // Extrai os IDs das questões assinaladas em um array
+        $assinaladas_ids = array_map(function($assinalada) {
+            return $assinalada->id_questao;
+        }, $assinaladas);
+    
+        // Prepara a consulta para obter uma questão que não foi respondida
+        $placeholders = implode(',', array_fill(0, count($assinaladas_ids), '?'));
+        $query = 'SELECT q.id, q.titulo FROM questaos q WHERE q.id NOT IN (' . $placeholders . ')';
+    
+        // Executa a consulta para obter as questões não respondidas
+        $questoesNaoRespondidas = DB::select($query, $assinaladas_ids);
+    
+        // Verifica se há alguma questão não respondida
+        if (count($questoesNaoRespondidas) > 0) {
+            // Seleciona uma questão aleatória do array de questões não respondidas
+            $questaoAleatoria = $questoesNaoRespondidas[array_rand($questoesNaoRespondidas)];
+    
+            // Obtém as alternativas da questão selecionada
+            $alternativas = DB::select('SELECT id, texto as alternativa FROM alternativas WHERE id_questao = ?', [$questaoAleatoria->id]);
+    
+        } else {
+            // Se não houver questões não respondidas, define $questaoAleatoria como null
+            $questaoAleatoria = null;
+            $alternativas = null;
+        }
+        return response()->json([
+            'questao' => $questaoAleatoria,
+            'alternativas' => $alternativas
+        ]);
     }
     
+    
+
     
 
 
