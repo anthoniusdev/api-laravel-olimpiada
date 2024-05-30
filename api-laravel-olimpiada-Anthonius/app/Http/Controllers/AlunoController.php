@@ -241,18 +241,22 @@ class AlunoController extends Controller
     public function obterQuestaoAleatoria(Request $request)
     {
         $aluno_id = Auth::user()->id;
+        
+        // Obtém os IDs das questões já assinaladas pelo aluno
+        // 'pluck' é usado para obter uma coleção de valores de uma única coluna
         $assinaladas = Assinala::where('id_aluno', $aluno_id)->pluck('id_questao');
         
-        $questoesNaoRespondidas = Questao::whereNotIn('id', $assinaladas)->get()->toArray();
+        $questoesNaoRespondidas = Questao::whereNotIn('id', $assinaladas)->select('titulo')->get()->toArray();
         
         if (count($questoesNaoRespondidas) > 0) {
-            $questaoAleatoria = $questoesNaoRespondidas[array_rand($questoesNaoRespondidas)];
+            $tituloAleatorio = $questoesNaoRespondidas[array_rand($questoesNaoRespondidas)]['titulo'];
         } else {
-            $questaoAleatoria = null;
+            $tituloAleatorio = null;
         }
     
-        return response()->json(['questao' => $questaoAleatoria]);
+        return response()->json(['titulo' => $tituloAleatorio]);
     }
+    
     
 
 
