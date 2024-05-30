@@ -238,14 +238,23 @@ class AlunoController extends Controller
     }
 
 
-    public function obterQuestao(Request $request)
+    public function obterQuestaoAleatoria(Request $request)
     {
         $aluno_id = Auth::user()->id;
         $assinaladas = Assinala::where('id_aluno', $aluno_id)->pluck('id_questao');
         
-        $questoesNaoRespondidas = Questao::whereNotIn('id', $assinaladas)->get();
+        $questoesNaoRespondidas = Questao::whereNotIn('id', $assinaladas)->get()->toArray();
         
-        return response()->json(['questoes' => $questoesNaoRespondidas]);
+        if (count($questoesNaoRespondidas) > 0) {
+            $questaoAleatoria = $questoesNaoRespondidas[array_rand($questoesNaoRespondidas)];
+        } else {
+            $questaoAleatoria = null;
+        }
+    
+        return response()->json(['questao' => $questaoAleatoria]);
     }
+    
+
+
 
 }

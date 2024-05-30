@@ -37,7 +37,7 @@ Route::prefix('/aluno')->group(function () {
         Route::prefix('/prova')->group(function(){
             Route::post('/add_prova', [ProvaController::class, 'store']);
             Route::prefix('/questao')->group(function(){
-                Route::get('/', [AlunoController::class, 'obterQuestao']);
+                Route::get('/', [AlunoController::class, 'obterQuestaoAleatoria']);
                 Route::post('/add_questao', [QuestaoController::class, 'store']);
                 Route::post('/add_alternativa', [AlternativaController::class, 'store']);
                 Route::post('/assinalar_questao', [AssinaladasController::class, 'store']);
