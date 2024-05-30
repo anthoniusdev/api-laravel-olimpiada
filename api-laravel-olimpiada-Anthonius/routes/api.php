@@ -1,8 +1,11 @@
 <?php
 
 use App\Http\Controllers\Admin;
+use App\Http\Controllers\AlternativaController;
 use App\Http\Controllers\AlunoController;
 use App\Http\Controllers\EscolaController;
+use App\Http\Controllers\ProvaController;
+use App\Http\Controllers\QuestaoController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -22,7 +25,7 @@ Route::prefix('/escola')->group(function () {
         Route::post('/logout', [EscolaController::class, 'logout']);
     });
 });
-    
+
 Route::prefix('/aluno')->group(function () {
     Route::post('/login', [AlunoController::class, 'login']);
     Route::middleware('auth:sanctum')->group(function () {
@@ -31,10 +34,14 @@ Route::prefix('/aluno')->group(function () {
         Route::put('/update', [AlunoController::class, 'update']);
         Route::delete('/delete', [AlunoController::class, 'delete']);
         Route::prefix('/prova')->group(function(){
+            Route::post('/add_prova', [ProvaController::class, 'store']);
             Route::prefix('/questao')->group(function(){
                 Route::get('/', [AlunoController::class, 'obterQuestao']);
+                Route::post('/add_questao', [QuestaoController::class, 'store']);
+                Route::post('/add_alternativa', [AlternativaController::class, 'store']);
             });
         });
+
     });
 });
 // // Rotas para verificar

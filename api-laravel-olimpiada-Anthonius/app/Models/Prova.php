@@ -9,9 +9,11 @@ class Prova extends Model
 {
     use HasFactory;
     protected $fillable = [
+        'id',
         'id_fase',
         'id_escola',
         'id_area',
-        'id',
+        'modalidade'
+
     ];
 }
