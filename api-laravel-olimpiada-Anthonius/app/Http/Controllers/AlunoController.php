@@ -280,16 +280,13 @@ class AlunoController extends Controller
         // Executa a consulta para obter as questões não respondidas
         $questoesNaoRespondidas = DB::select($query, $assinaladas_ids);
     
-        // Verifica se há alguma questão não respondida
         if (count($questoesNaoRespondidas) > 0) {
             // Seleciona uma questão aleatória do array de questões não respondidas
             $questaoAleatoria = $questoesNaoRespondidas[array_rand($questoesNaoRespondidas)];
     
-            // Obtém as alternativas da questão selecionada
             $alternativas = DB::select('SELECT id, texto as alternativa FROM alternativas WHERE id_questao = ?', [$questaoAleatoria->id]);
     
         } else {
-            // Se não houver questões não respondidas, define $questaoAleatoria como null
             $questaoAleatoria = null;
             $alternativas = null;
         }
