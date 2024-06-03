@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Assinala;
+use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AssinaladasController extends Controller
 {
@@ -39,6 +41,7 @@ class AssinaladasController extends Controller
     public function store(Request $request)
     {
         try {
+            $id_aluno = Auth::user()->id;
             $assinala_questao = Assinala::create([
                 'id_aluno' => $request->input('id_aluno'),
                 'id_questao' => $request->input('id_questao'),
