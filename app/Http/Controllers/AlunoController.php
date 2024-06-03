@@ -242,46 +242,60 @@ class AlunoController extends Controller
     // public function obterQuestaoAleatoria(Request $request)
     // {
     //     $aluno_id = Auth::user()->id;
-        
+
     //     // Obtém os IDs das questões já assinaladas pelo aluno
     //     // 'pluck' é usado para obter uma coleção de valores de uma única coluna
     //     $assinaladas = Assinala::where('id_aluno', $aluno_id)->pluck('id_questao');
-        
+
     //     $questoesNaoRespondidas = Questao::whereNotIn('id', $assinaladas)->select('titulo')->get()->toArray();
-        
+
     //     if (count($questoesNaoRespondidas) > 0) {
     //         $tituloAleatorio = $questoesNaoRespondidas[array_rand($questoesNaoRespondidas)]['titulo'];
     //     } else {
     //         $tituloAleatorio = null;
     //     }
-    
+
     //     return response()->json(['titulo' => $tituloAleatorio]);
     // }
-    
 
-    
+
+
     public function obterQuestaoAleatoria(Request $request)
     {
         // Obtém o ID do aluno logado atualmente
         $aluno_id = Auth::user()->id;
-    
-        // Prepara a consulta para obter uma questão que não foi respondida
-        $questoesNaoRespondidas = DB::select('SELECT q.id, q.titulo FROM questaos q WHERE q.id NOT IN (SELECT id_questao FROM assinalas WHERE id_aluno = ?) AND q.id_prova = ?', [$aluno_id, $request['id_prova']]);
-    
-        if (count($questoesNaoRespondidas) > 0) {
-            // Seleciona uma questão aleatória do array de questões não respondidas
-            $questaoAleatoria = $questoesNaoRespondidas[array_rand($questoesNaoRespondidas)];
-    
-            $alternativas = DB::select('SELECT id, texto as alternativa FROM alternativas WHERE id_questao = ?', [$questaoAleatoria->id]);
-    
+        // Verifica se a questão já foi respondida
+        $questao = DB::select('SELECT qt.id_questao, qt.id_alternativa_assinalada, q.path_img from questao_temporarias qt inner join questaos q on q.id = qt.id_questao where qt.numeralQuestao = ? and qt.id_aluno = ?', [$request['numero_questao'], $aluno_id]);
+        if (count($questao) > 0) {
+            $alternativas = DB::select('SELECT id, texto as alternativa FROM alternativas WHERE id_questao = ?', [$questao['id_questao']]);
         } else {
-            $questaoAleatoria = null;
-            $alternativas = null;
+            // obtendo a modalidade do aluno
+            $modalidade_aluno = Aluno::select('modalidade')->where('id', $aluno_id)->first();
+            // Prepara a consulta para obter uma questão que não foi respondida
+            $questoesNaoRespondidas = DB::select('SELECT q.id, q.titulo, q.path_img FROM questaos q INNER JOIN provas p ON p.id = q.id_prova INNER JOIN areas a ON a.id = p.id_area WHERE ? NOT IN (SELECT numeralQuestao FROM questao_temporarias WHERE id_aluno = ?) AND p.modalidade = ?', [$request['numero_questao'], $aluno_id, $modalidade_aluno->modalidade]);
+
+            if (count($questoesNaoRespondidas) > 0) {
+                // Seleciona uma questão aleatória do array de questões não respondidas
+                $questao = $questoesNaoRespondidas[array_rand($questoesNaoRespondidas)];
+
+                $alternativas = DB::select('SELECT id, texto as alternativa FROM alternativas WHERE id_questao = ?', [$questao->id]);
+            } else {
+                $questao = null;
+                $alternativas = null;
+            }
         }
         return response()->json([
-            'questao' => $questaoAleatoria,
+            'questao' => $questao,
             'alternativas' => $alternativas
         ]);
     }
-    
+    // public function respondeQuestao(Request $request){
+    //     $aluno_id = Auth::user()->id;
+    //     $dadosValidados = $request->validate([
+    //         'id_prova' => 'required|exists:provas,id',
+    //         'id_questao' => 'required|exists:questaos,id',
+    //         'id_alternativa_assinalada' => 'required|exists:alternativas,id',
+    //         'id_prova' => 'required|exists:provas,id',
+    //     ])
+    // }
 }
