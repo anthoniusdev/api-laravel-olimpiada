@@ -266,7 +266,7 @@ class AlunoController extends Controller
         $aluno_id = Auth::user()->id;
     
         // Prepara a consulta para obter uma questão que não foi respondida
-        $questoesNaoRespondidas = DB::select('SELECT q.id, q.titulo FROM questaos q WHERE q.id NOT IN (SELECT id_questao FROM assinalas WHERE id_aluno = ?)', [$aluno_id]);
+        $questoesNaoRespondidas = DB::select('SELECT q.id, q.titulo FROM questaos q WHERE q.id NOT IN (SELECT id_questao FROM assinalas WHERE id_aluno = ?) AND q.id_prova = ?', [$aluno_id, $request['id_prova']]);
     
         if (count($questoesNaoRespondidas) > 0) {
             // Seleciona uma questão aleatória do array de questões não respondidas
