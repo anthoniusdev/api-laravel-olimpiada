@@ -278,42 +278,7 @@ class AlunoController extends Controller
         ]);
     }
 
-    public function obterQuestao($id)
-    {
-        // Obtém o ID do aluno logado atualmente
-        $aluno_id = Auth::user()->id;
-    
 
-        $assinaladas = DB::select('SELECT id_questao FROM assinalas WHERE id_aluno = ?', [$aluno_id]);
-    
-        // Extrai os IDs das questões assinaladas em um array
-        $assinaladas_ids = array_map(function($assinalada) {
-            return $assinalada->id_questao;
-        }, $assinaladas);
-    
-        // Prepara a consulta para obter uma questão que não foi respondida
-        $placeholders = implode(',', array_fill(0, count($assinaladas_ids), '?'));
-        $query = 'SELECT q.id, q.titulo FROM questaos q WHERE q.id NOT IN (' . $placeholders . ')';
-    
-        // Executa a consulta para obter as questões não respondidas
-        $questoesNaoRespondidas = DB::select($query, $assinaladas_ids);
-    
-
-            if (count($questoesNaoRespondidas) > 0) {
-                // Seleciona uma questão aleatória do array de questões não respondidas
-                $questao = $questoesNaoRespondidas[array_rand($questoesNaoRespondidas)];
-
-                $alternativas = DB::select('SELECT id, texto as alternativa FROM alternativas WHERE id_questao = ?', [$questao->id]);
-            } else {
-                $questao = null;
-                $alternativas = null;
-            }
-        
-        return response()->json([
-            'questao' => $questao,
-            'alternativas' => $alternativas
-        ]);
-    }
     // public function respondeQuestao(Request $request){
     //     $aluno_id = Auth::user()->id;
     //     $dadosValidados = $request->validate([
