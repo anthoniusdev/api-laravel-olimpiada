@@ -12,6 +12,7 @@ use App\Models\Area;
 use App\Models\Assinala;
 use App\Models\Escola;
 use App\Models\Questao;
+use App\Models\QuestaoTemporaria;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -204,9 +205,11 @@ class AlunoController extends Controller
     {
         if (Auth::attempt($request->only('username', 'password'))) {
             $dadosAluno = Aluno::where('usuario', $request['username'])->first();
+            
             if ($dadosAluno) {
-                $dadosAluno = $dadosAluno->makeHidden('senha', 'created_at', 'updated_at');
-
+                $dadosAluno = $dadosAluno->makeHidden('id', 'senha', 'created_at', 'updated_at');
+                $dadosAluno['idAluno'] = $this->retornaID($dadosAluno['usuario']);
+                $dadosAluno['idAluno'] = $dadosAluno['idAluno']['id'];
                 $nomeEscola = Escola::select('nome')->where('codigo_escola', $dadosAluno['codigo_escola'])->first();
                 if ($nomeEscola !== null) {
                     $dadosAluno->nomeEscola = $nomeEscola['nome'];
@@ -232,9 +235,9 @@ class AlunoController extends Controller
     {
         $request->user()->currentAccessToken()->delete();
     }
-    public static function retornaID($cpf)
+    public static function retornaID($username)
     {
-        $id = DB::select('SELECT id FROM alunos WHERE cpf = ?', [$cpf]);
+        $id = DB::select('SELECT id FROM alunos WHERE usuario = ?', [$username]);
         foreach ($id as $ids) {
             return ["id" => $ids->id];
         };
@@ -244,90 +247,41 @@ class AlunoController extends Controller
     public function obterQuestaoAleatoria(Request $request)
     {
         // Obtém o ID do aluno logado atualmente
-        $aluno_id = Auth::user()->id;
-    
-
-        $assinaladas = DB::select('SELECT id_questao FROM assinalas WHERE id_aluno = ?', [$aluno_id]);
-    
-        // Extrai os IDs das questões assinaladas em um array
-        $assinaladas_ids = array_map(function($assinalada) {
-            return $assinalada->id_questao;
-        }, $assinaladas);
-    
-        // Prepara a consulta para obter uma questão que não foi respondida
-        $placeholders = implode(',', array_fill(0, count($assinaladas_ids), '?'));
-        $query = 'SELECT q.id, q.titulo FROM questaos q WHERE q.id NOT IN (' . $placeholders . ')';
-    
-        // Executa a consulta para obter as questões não respondidas
-        $questoesNaoRespondidas = DB::select($query, $assinaladas_ids);
-    
-
-        if (count($questoesNaoRespondidas) > 0) {
-            // Seleciona uma questão aleatória do array de questões não respondidas
-            $questaoAleatoria = $questoesNaoRespondidas[array_rand($questoesNaoRespondidas)];
-    
-            $alternativas = DB::select('SELECT id, texto as alternativa FROM alternativas WHERE id_questao = ?', [$questaoAleatoria->id]);
-    
+        $aluno_id = $this->retornaID(Auth::user()->username);
+        $aluno_id = $aluno_id['id'];
+        // Verifica se a questão já foi respondida
+        $questao = DB::select('SELECT qt.id_questao, qt.id_alternativa_assinalada, q.path_img, q.titulo from questao_temporarias qt inner join questaos q on q.id = qt.id_questao where qt.numeralQuestao = ? and qt.id_aluno = ?', [$request['numero_questao'], $aluno_id]);
+        if (count($questao) > 0) {
+            $questao = $questao[array_rand($questao)];
+            $alternativas = DB::select('SELECT id, texto as alternativa FROM alternativas WHERE id_questao = ?', [$questao->id_questao]);
         } else {
-            $questaoAleatoria = null;
-            $alternativas = null;
-        }
-        return response()->json([
-            'questao' => $questaoAleatoria,
-            'alternativas' => $alternativas
-        ]);
-    }
-
-    public function obterQuestao($id)
-    {
-        // Obtém o ID do aluno logado atualmente
-        $aluno_id = Auth::user()->id;
-    
-
-        $assinaladas = DB::select('SELECT id_questao FROM assinalas WHERE id_aluno = ?', [$aluno_id]);
-    
-        // Extrai os IDs das questões assinaladas em um array
-        $assinaladas_ids = array_map(function($assinalada) {
-            return $assinalada->id_questao;
-        }, $assinaladas);
-    
-        // Prepara a consulta para obter uma questão que não foi respondida
-        $placeholders = implode(',', array_fill(0, count($assinaladas_ids), '?'));
-        $query = 'SELECT q.id, q.titulo FROM questaos q WHERE q.id NOT IN (' . $placeholders . ')';
-    
-        // Executa a consulta para obter as questões não respondidas
-        $questoesNaoRespondidas = DB::select($query, $assinaladas_ids);
-    
+            // obtendo a modalidade do aluno
+            $modalidade_aluno = Aluno::select('modalidade')->where('id', $aluno_id)->first();
+            // Prepara a consulta para obter uma questão que não foi respondida
+            $questoesNaoRespondidas = DB::select('SELECT q.id, q.titulo, q.path_img FROM questaos q INNER JOIN provas p ON p.id = q.id_prova INNER JOIN areas a ON a.id = p.id_area WHERE ? NOT IN (SELECT numeralQuestao FROM questao_temporarias WHERE id_aluno = ?) AND p.modalidade = ?', [$request['numero_questao'], $aluno_id, $modalidade_aluno->modalidade]);
 
             if (count($questoesNaoRespondidas) > 0) {
                 // Seleciona uma questão aleatória do array de questões não respondidas
                 $questao = $questoesNaoRespondidas[array_rand($questoesNaoRespondidas)];
 
                 $alternativas = DB::select('SELECT id, texto as alternativa FROM alternativas WHERE id_questao = ?', [$questao->id]);
+                DB::insert('INSERT INTO questao_temporarias (id_aluno, id_questao, id_alternativa_assinalada, numeralQuestao) values (?, ?, ?, ?)', [$aluno_id, $questao->id, null, $request['numero_questao']]);
             } else {
                 $questao = null;
                 $alternativas = null;
             }
-        
+        }
         return response()->json([
             'questao' => $questao,
             'alternativas' => $alternativas
         ]);
     }
-    // public function respondeQuestao(Request $request){
-    //     $aluno_id = Auth::user()->id;
-    //     $dadosValidados = $request->validate([
-    //         'id_prova' => 'required|exists:provas,id',
-    //         'id_questao' => 'required|exists:questaos,id',
-    //         'id_alternativa_assinalada' => 'required|exists:alternativas,id',
-    //         'id_prova' => 'required|exists:provas,id',
-    //     ])
     
     public function validarProvaRespondida(Request $request)
     {
         try {
-            $aluno_id = Auth::user()->id;
-
+            $aluno_id = $this->retornaID(Auth::user()->username);
+            $aluno_id = $aluno_id['id'];
             // Obtém a data e hora de criação da prova para o aluno
             $prova = DB::table('assinalas')//acho q será a tabela questao_alternativa
                 ->where('id_aluno', $aluno_id)

@@ -43,7 +43,7 @@ class AssinaladasController extends Controller
         try {
             $id_aluno = Auth::user()->id;
             $assinala_questao = Assinala::create([
-                'id_aluno' => $request->input('id_aluno'),
+                'id_aluno' => $id_aluno,
                 'id_questao' => $request->input('id_questao'),
                 'id_alternativa_assinalada' => $request->input('id_alternativa_assinalada')
             ]);
