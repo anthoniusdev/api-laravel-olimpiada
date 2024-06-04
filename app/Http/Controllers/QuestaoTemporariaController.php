@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Exception;
 use Illuminate\Http\Request;
 use App\Models\QuestaoTemporaria;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class QuestaoTemporariaController extends Controller
 {
@@ -16,6 +18,13 @@ class QuestaoTemporariaController extends Controller
             'msg' => $msg,
             'fase' => $assinalada
         ]));
+    }
+    public static function retornaID($username)
+    {
+        $id = DB::select('SELECT id FROM alunos WHERE usuario = ?', [$username]);
+        foreach ($id as $ids) {
+            return ["id" => $ids->id];
+        };
     }
     /**
      * Display a listing of the resource.
@@ -31,13 +40,24 @@ class QuestaoTemporariaController extends Controller
     public function store(Request $request)
     {
         try {
-            $assinala_questao_temporariamente = QuestaoTemporaria::create([
-                'numeralQuestao' => $request->input('numero_questao'),
-                'id_aluno' => $request->input('id_aluno'),
-                'id_questao' => $request->input('id_questao'),
-                'id_alternativa_assinalada' => $request->input('id_alternativa_assinalada')
+            $id_aluno = $this->retornaID(Auth::user()->username, 'alunos')['id'];
+            $questaoTemporaria = QuestaoTemporaria::where('id_aluno', $id_aluno)->where('id_questao', $request['id_questao'])->update(['id_alternativa_assinalada' => $request['id_alternativa_assinalada']]);
+            if ($questaoTemporaria > 0) {
+                return response()->json([
+                    'ok' => true,
+                    'msg' => 'Resposta atualizada com sucesso'
+                ]);
+            } else {
+                QuestaoTemporaria::create([
+                    'numeralQuestao' => $request->input('numero_questao'),
+                    'id_aluno' => $id_aluno,
+                    'id_questao' => $request->input('id_questao'),
+                    'id_alternativa_assinalada' => $request->input('id_alternativa_assinalada')
+                ]);
+            }
+            return response()->json([
+                'msg' => "Questao " . $request['numero_questao'] . " assinalada temporariamente"
             ]);
-            $this->resposta(200, true, "Questao " . $request['numero_questao'] . " assinalada temporariamente", $assinala_questao_temporariamente);
         } catch (Exception $e) {
             return response()->json([
                 'ok' => false,
