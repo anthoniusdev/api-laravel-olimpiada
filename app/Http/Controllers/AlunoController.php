@@ -12,10 +12,12 @@ use App\Models\Area;
 use App\Models\Assinala;
 use App\Models\Escola;
 use App\Models\Questao;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redis;
+use Exception;
 
 
 class AlunoController extends Controller
@@ -239,40 +241,63 @@ class AlunoController extends Controller
     }
 
 
-    // public function obterQuestaoAleatoria(Request $request)
-    // {
-    //     $aluno_id = Auth::user()->id;
-
-    //     // Obtém os IDs das questões já assinaladas pelo aluno
-    //     // 'pluck' é usado para obter uma coleção de valores de uma única coluna
-    //     $assinaladas = Assinala::where('id_aluno', $aluno_id)->pluck('id_questao');
-
-    //     $questoesNaoRespondidas = Questao::whereNotIn('id', $assinaladas)->select('titulo')->get()->toArray();
-
-    //     if (count($questoesNaoRespondidas) > 0) {
-    //         $tituloAleatorio = $questoesNaoRespondidas[array_rand($questoesNaoRespondidas)]['titulo'];
-    //     } else {
-    //         $tituloAleatorio = null;
-    //     }
-
-    //     return response()->json(['titulo' => $tituloAleatorio]);
-    // }
-
-
-
     public function obterQuestaoAleatoria(Request $request)
     {
         // Obtém o ID do aluno logado atualmente
         $aluno_id = Auth::user()->id;
-        // Verifica se a questão já foi respondida
-        $questao = DB::select('SELECT qt.id_questao, qt.id_alternativa_assinalada, q.path_img from questao_temporarias qt inner join questaos q on q.id = qt.id_questao where qt.numeralQuestao = ? and qt.id_aluno = ?', [$request['numero_questao'], $aluno_id]);
-        if (count($questao) > 0) {
-            $alternativas = DB::select('SELECT id, texto as alternativa FROM alternativas WHERE id_questao = ?', [$questao['id_questao']]);
+    
+
+        $assinaladas = DB::select('SELECT id_questao FROM assinalas WHERE id_aluno = ?', [$aluno_id]);
+    
+        // Extrai os IDs das questões assinaladas em um array
+        $assinaladas_ids = array_map(function($assinalada) {
+            return $assinalada->id_questao;
+        }, $assinaladas);
+    
+        // Prepara a consulta para obter uma questão que não foi respondida
+        $placeholders = implode(',', array_fill(0, count($assinaladas_ids), '?'));
+        $query = 'SELECT q.id, q.titulo FROM questaos q WHERE q.id NOT IN (' . $placeholders . ')';
+    
+        // Executa a consulta para obter as questões não respondidas
+        $questoesNaoRespondidas = DB::select($query, $assinaladas_ids);
+    
+
+        if (count($questoesNaoRespondidas) > 0) {
+            // Seleciona uma questão aleatória do array de questões não respondidas
+            $questaoAleatoria = $questoesNaoRespondidas[array_rand($questoesNaoRespondidas)];
+    
+            $alternativas = DB::select('SELECT id, texto as alternativa FROM alternativas WHERE id_questao = ?', [$questaoAleatoria->id]);
+    
         } else {
-            // obtendo a modalidade do aluno
-            $modalidade_aluno = Aluno::select('modalidade')->where('id', $aluno_id)->first();
-            // Prepara a consulta para obter uma questão que não foi respondida
-            $questoesNaoRespondidas = DB::select('SELECT q.id, q.titulo, q.path_img FROM questaos q INNER JOIN provas p ON p.id = q.id_prova INNER JOIN areas a ON a.id = p.id_area WHERE ? NOT IN (SELECT numeralQuestao FROM questao_temporarias WHERE id_aluno = ?) AND p.modalidade = ?', [$request['numero_questao'], $aluno_id, $modalidade_aluno->modalidade]);
+            $questaoAleatoria = null;
+            $alternativas = null;
+        }
+        return response()->json([
+            'questao' => $questaoAleatoria,
+            'alternativas' => $alternativas
+        ]);
+    }
+
+    public function obterQuestao($id)
+    {
+        // Obtém o ID do aluno logado atualmente
+        $aluno_id = Auth::user()->id;
+    
+
+        $assinaladas = DB::select('SELECT id_questao FROM assinalas WHERE id_aluno = ?', [$aluno_id]);
+    
+        // Extrai os IDs das questões assinaladas em um array
+        $assinaladas_ids = array_map(function($assinalada) {
+            return $assinalada->id_questao;
+        }, $assinaladas);
+    
+        // Prepara a consulta para obter uma questão que não foi respondida
+        $placeholders = implode(',', array_fill(0, count($assinaladas_ids), '?'));
+        $query = 'SELECT q.id, q.titulo FROM questaos q WHERE q.id NOT IN (' . $placeholders . ')';
+    
+        // Executa a consulta para obter as questões não respondidas
+        $questoesNaoRespondidas = DB::select($query, $assinaladas_ids);
+    
 
             if (count($questoesNaoRespondidas) > 0) {
                 // Seleciona uma questão aleatória do array de questões não respondidas
@@ -283,7 +308,7 @@ class AlunoController extends Controller
                 $questao = null;
                 $alternativas = null;
             }
-        }
+        
         return response()->json([
             'questao' => $questao,
             'alternativas' => $alternativas
@@ -297,5 +322,58 @@ class AlunoController extends Controller
     //         'id_alternativa_assinalada' => 'required|exists:alternativas,id',
     //         'id_prova' => 'required|exists:provas,id',
     //     ])
-    // }
+    
+    public function validarProvaRespondida(Request $request)
+    {
+        try {
+            $aluno_id = Auth::user()->id;
+
+            // Obtém a data e hora de criação da prova para o aluno
+            $prova = DB::table('assinalas')//acho q será a tabela questao_alternativa
+                ->where('id_aluno', $aluno_id)
+                ->orderBy('created_at', 'asc')
+                ->first();
+
+            // Verifica se a prova foi iniciada
+            if (!$prova) {
+                return response()->json([
+                    'error' => 'Prova nao encontrada'
+                ], 404);
+            }
+
+            // Calcula o tempo decorrido desde o início da prova
+            $inicioProva = Carbon::parse($prova->created_at);
+            $tempoDecorrido = $inicioProva->diffInMinutes(Carbon::now());
+
+            //verifica com qtd de minutos
+            if ($tempoDecorrido > 120) {
+                return response()->json([
+                    'provaEncerrada' => true,
+                    'mensagem' => 'O tempo maximo para realizar a prova foi excedido.'
+                ]);
+            }
+    //----------------------------------------------------------------------------------------
+            $totalQuestoes = DB::table('questaos')->count();
+    
+            // Obtém o número de questões respondidas pelo aluno
+            $questoesRespondidas = DB::table('assinalas')
+                ->where('id_aluno', $aluno_id)
+                ->distinct('id_questao')
+                ->count('id_questao');
+    
+            
+            $provaRespondida = $questoesRespondidas >= $totalQuestoes? true : false;
+
+            return response()->json([
+                'provaEncerrada' => false,
+                'provaRespondida' => $provaRespondida
+            ]);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => 'Erro ao processar a requisicao', 
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

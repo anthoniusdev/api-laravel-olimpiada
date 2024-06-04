@@ -36,6 +36,7 @@ Route::prefix('/aluno')->group(function () {
         Route::delete('/delete', [AlunoController::class, 'delete']);
         Route::prefix('/prova')->group(function(){
             Route::post('/add_prova', [ProvaController::class, 'store']);
+            Route::get('/prova_respondida', [AlunoController::class, 'validarProvaRespondida']);
             Route::prefix('/questao')->group(function(){
                 Route::get('/', [AlunoController::class, 'obterQuestaoAleatoria']);
                 Route::post('/add_questao', [QuestaoController::class, 'store']);
