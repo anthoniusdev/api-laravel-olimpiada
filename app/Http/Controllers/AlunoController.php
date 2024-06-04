@@ -256,9 +256,13 @@ class AlunoController extends Controller
             $alternativas = DB::select('SELECT id, texto as alternativa FROM alternativas WHERE id_questao = ?', [$questao->id_questao]);
         } else {
             // obtendo a modalidade do aluno
-            $modalidade_aluno = Aluno::select('modalidade')->where('id', $aluno_id)->first();
+            if($request['id_area'] == Area::select('id')->where('nome', 'Empreendorismo e Inovação')){
+                $modalidade_aluno = 'a';
+            }else{
+                $modalidade_aluno = Aluno::select('modalidade')->where('id', $aluno_id)->first();
+            }
             // Prepara a consulta para obter uma questão que não foi respondida
-            $questoesNaoRespondidas = DB::select('SELECT q.id, q.titulo, q.path_img FROM questaos q INNER JOIN provas p ON p.id = q.id_prova INNER JOIN areas a ON a.id = p.id_area WHERE ? NOT IN (SELECT numeralQuestao FROM questao_temporarias WHERE id_aluno = ?) AND p.modalidade = ?', [$request['numero_questao'], $aluno_id, $modalidade_aluno->modalidade]);
+            $questoesNaoRespondidas = DB::select('SELECT q.id, q.titulo, q.path_img FROM questaos q INNER JOIN provas p ON p.id = q.id_prova INNER JOIN areas a ON a.id = p.id_area WHERE ? NOT IN (SELECT numeralQuestao FROM questao_temporarias WHERE id_aluno = ?) AND p.modalidade = ? AND p.id_area = ?', [$request['numero_questao'], $aluno_id, $modalidade_aluno->modalidade, $request['id_area']]);
 
             if (count($questoesNaoRespondidas) > 0) {
                 // Seleciona uma questão aleatória do array de questões não respondidas
