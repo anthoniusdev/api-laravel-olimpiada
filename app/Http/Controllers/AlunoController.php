@@ -329,7 +329,7 @@ class AlunoController extends Controller
             $aluno_id = Auth::user()->id;
 
             // Obtém a data e hora de criação da prova para o aluno
-            $prova = DB::table('assinalas')
+            $prova = DB::table('assinalas')//acho q será a tabela questao_alternativa
                 ->where('id_aluno', $aluno_id)
                 ->orderBy('created_at', 'asc')
                 ->first();
