@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Assinala;
-use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Models\QuestaoTemporaria;
 
-class AssinaladasController extends Controller
+class QuestaoTemporariaController extends Controller
 {
     function resposta($codigo, $ok, $msg, $assinalada)
     {
@@ -28,31 +26,22 @@ class AssinaladasController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
         try {
-            $id_aluno = Auth::user()->id;
-            $assinala_questao = Assinala::create([
+            $assinala_questao_temporariamente = QuestaoTemporaria::create([
+                'numeralQuestao' => $request->input('numero_questao'),
                 'id_aluno' => $request->input('id_aluno'),
                 'id_questao' => $request->input('id_questao'),
                 'id_alternativa_assinalada' => $request->input('id_alternativa_assinalada')
             ]);
-            $this->resposta(200, true, 'Questao assinalada', $assinala_questao);
-        
+            $this->resposta(200, true, "Questao " . $request['numero_questao'] . " assinalada temporariamente", $assinala_questao_temporariamente);
         } catch (Exception $e) {
             return response()->json([
                 'ok' => false,
-                'msg' => 'Erro ao assinalar questão',
+                'msg' => 'Erro ao assinalar questão ' . $request['numero_questao'] . ' temporariamente',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -62,14 +51,6 @@ class AssinaladasController extends Controller
      * Display the specified resource.
      */
     public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
     {
         //
     }

@@ -12,10 +12,12 @@ use App\Models\Area;
 use App\Models\Assinala;
 use App\Models\Escola;
 use App\Models\Questao;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redis;
+use Exception;
 
 
 class AlunoController extends Controller
@@ -239,8 +241,6 @@ class AlunoController extends Controller
     }
 
 
-
-    
     public function obterQuestaoAleatoria(Request $request)
     {
         // Obtém o ID do aluno logado atualmente
@@ -299,20 +299,81 @@ class AlunoController extends Controller
         $questoesNaoRespondidas = DB::select($query, $assinaladas_ids);
     
 
-        if (count($questoesNaoRespondidas) > 0) {
-            // Seleciona uma questão aleatória do array de questões não respondidas
-            $questaoAleatoria = $questoesNaoRespondidas[array_rand($questoesNaoRespondidas)];
-    
-            $alternativas = DB::select('SELECT id, texto as alternativa FROM alternativas WHERE id_questao = ?', [$questaoAleatoria->id]);
-    
-        } else {
-            $questaoAleatoria = null;
-            $alternativas = null;
-        }
+            if (count($questoesNaoRespondidas) > 0) {
+                // Seleciona uma questão aleatória do array de questões não respondidas
+                $questao = $questoesNaoRespondidas[array_rand($questoesNaoRespondidas)];
+
+                $alternativas = DB::select('SELECT id, texto as alternativa FROM alternativas WHERE id_questao = ?', [$questao->id]);
+            } else {
+                $questao = null;
+                $alternativas = null;
+            }
+        
         return response()->json([
-            'questao' => $questaoAleatoria,
+            'questao' => $questao,
             'alternativas' => $alternativas
         ]);
     }
+    // public function respondeQuestao(Request $request){
+    //     $aluno_id = Auth::user()->id;
+    //     $dadosValidados = $request->validate([
+    //         'id_prova' => 'required|exists:provas,id',
+    //         'id_questao' => 'required|exists:questaos,id',
+    //         'id_alternativa_assinalada' => 'required|exists:alternativas,id',
+    //         'id_prova' => 'required|exists:provas,id',
+    //     ])
     
+    public function validarProvaRespondida(Request $request)
+    {
+        try {
+            $aluno_id = Auth::user()->id;
+
+            // Obtém a data e hora de criação da prova para o aluno
+            $prova = DB::table('assinalas')
+                ->where('id_aluno', $aluno_id)
+                ->orderBy('created_at', 'asc')
+                ->first();
+
+            // Verifica se a prova foi iniciada
+            if (!$prova) {
+                return response()->json([
+                    'error' => 'Prova nao encontrada'
+                ], 404);
+            }
+
+            // Calcula o tempo decorrido desde o início da prova
+            $inicioProva = Carbon::parse($prova->created_at);
+            $tempoDecorrido = $inicioProva->diffInMinutes(Carbon::now());
+
+            //verifica com qtd de minutos
+            if ($tempoDecorrido > 120) {
+                return response()->json([
+                    'provaEncerrada' => true,
+                    'mensagem' => 'O tempo maximo para realizar a prova foi excedido.'
+                ]);
+            }
+    //----------------------------------------------------------------------------------------
+            $totalQuestoes = DB::table('questaos')->count();
+    
+            // Obtém o número de questões respondidas pelo aluno
+            $questoesRespondidas = DB::table('assinalas')
+                ->where('id_aluno', $aluno_id)
+                ->distinct('id_questao')
+                ->count('id_questao');
+    
+            
+            $provaRespondida = $questoesRespondidas >= $totalQuestoes? true : false;
+
+            return response()->json([
+                'provaEncerrada' => false,
+                'provaRespondida' => $provaRespondida
+            ]);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => 'Erro ao processar a requisicao', 
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
