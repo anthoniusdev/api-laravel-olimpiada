@@ -200,7 +200,6 @@ class AlunoController extends Controller
     {
         if (Auth::attempt($request->only('username', 'password'))) {
             $dadosAluno = Aluno::where('usuario', $request['username'])->first();
-            
             if ($dadosAluno) {
                 $dadosAluno = $dadosAluno->makeHidden('id', 'senha', 'created_at', 'updated_at');
                 $dadosAluno['idAluno'] = $this->retornaID($dadosAluno['usuario']);
@@ -226,6 +225,7 @@ class AlunoController extends Controller
         }
         return response()->json(['msg' => 'Credenciais incorretas'], 401);
     }
+
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
@@ -241,28 +241,26 @@ class AlunoController extends Controller
 
     public function obterQuestaoAleatoria(Request $request)
     {
-        // Obtém o ID do aluno logado atualmente
-        $aluno_id = $this->retornaID(Auth::user()->username);
+        // Obtém o ID do aluno  -- funcionando
+        $aluno_id = $this->retornaID($request['usuario']);
         $aluno_id = $aluno_id['id'];
-        // Verifica se a questão já foi respondida
-        $questao = DB::select('SELECT qt.id_questao, qt.id_alternativa_assinalada, q.path_img, q.titulo from questao_temporarias qt inner join questaos q on q.id = qt.id_questao where qt.numeralQuestao = ? and qt.id_aluno = ?', [$request['numero_questao'], $aluno_id]);
-        if (count($questao) > 0) {
-            $questao = $questao[array_rand($questao)];
-            $alternativas = DB::select('SELECT id, texto as alternativa FROM alternativas WHERE id_questao = ?', [$questao->id_questao]);
+        // Obtém a modalidade de aluno -- funcionando
+        if ($request['id_area'] == Area::select('id')->where('nome', 'Empreendorismo e Inovação')) {
+            $modalidade_aluno = 'a';
         } else {
-            // obtendo a modalidade do aluno
-            if($request['id_area'] == Area::select('id')->where('nome', 'Empreendorismo e Inovação')){
-                $modalidade_aluno = 'a';
-            }else{
-            echo "veio p linha 278, idaluno=" . $aluno_id;
-                $modalidade_aluno = Aluno::select('modalidade')->where('id', $aluno_id)->first();
-            }
-            echo $modalidade_aluno;
-            // Prepara a consulta para obter uma questão que não foi respondida
-            $questoesNaoRespondidas = DB::select('SELECT q.id, q.titulo, q.path_img FROM questaos q INNER JOIN provas p ON p.id = q.id_prova INNER JOIN areas a ON a.id = p.id_area WHERE ? NOT IN (SELECT numeralQuestao FROM questao_temporarias WHERE id_aluno = ?) AND p.modalidade = ? AND p.id_area = ? and q.id not in (SELECT id_questao FROM questao_temporarias WHERE id_aluno = ?)', [$request['numero_questao'], $aluno_id, $modalidade_aluno->modalidade, $request['id_area'], $aluno_id]);
+            $modalidade_aluno = Aluno::select('modalidade')->where('id', $aluno_id)->first();
+        }
+        // Verificando se a questão já foi resgastada
+        $questao = DB::select('SELECT q.id , qt.id_alternativa_assinalada, q.path_img, q.titulo from questao_temporarias qt inner join questaos q on q.id = qt.id_questao inner join provas p on q.id_prova = p.id inner join areas a on a.id = p.id_area where qt.numeralQuestao = ? and qt.id_aluno = ? and p.modalidade = ? and a.id = ?', [$request['numero_questao'], $aluno_id, $modalidade_aluno['modalidade'], $request['id_area']]);
+        if (count($questao) > 0) { // Se sim, é só pegar as alternativas
+            $questao = $questao[0];
+            $alternativas = DB::select('SELECT id, texto as alternativa FROM alternativas WHERE id_questao = ?', [$questao->id]);
+        } else { // Se não, tem que preparar questões novas
 
+            // Prepara a consulta para obter uma questão que não foi resgastada
+            $questoesNaoRespondidas = DB::select('SELECT q.id, q.titulo, q.path_img FROM questaos q INNER JOIN provas p ON p.id = q.id_prova INNER JOIN areas a ON a.id = p.id_area WHERE p.modalidade = ? AND p.id_area = ? and q.id not in (SELECT id_questao FROM questao_temporarias WHERE id_aluno = ?)', [$modalidade_aluno->modalidade, $request['id_area'], $aluno_id]);
             if (count($questoesNaoRespondidas) > 0) {
-                // Seleciona uma questão aleatória do array de questões não respondidas
+                // Seleciona uma questão aleatória do array de questões não resgastadas
                 $questao = $questoesNaoRespondidas[array_rand($questoesNaoRespondidas)];
 
                 $alternativas = DB::select('SELECT id, texto as alternativa FROM alternativas WHERE id_questao = ?', [$questao->id]);
@@ -275,17 +273,16 @@ class AlunoController extends Controller
         return response()->json([
             'questao' => $questao,
             'alternativas' => $alternativas,
-            'modalidade_aluno' => $modalidade_aluno->modalidade
         ]);
     }
-    
+
     public function validarProvaRespondida(Request $request)
     {
         try {
             $aluno_id = $this->retornaID(Auth::user()->username);
             $aluno_id = $aluno_id['id'];
             // Obtém a data e hora de criação da prova para o aluno
-            $prova = DB::table('assinalas')//acho q será a tabela questao_alternativa
+            $prova = DB::table('assinalas') //acho q será a tabela questao_alternativa
                 ->where('id_aluno', $aluno_id)
                 ->orderBy('created_at', 'asc')
                 ->first();
@@ -308,26 +305,25 @@ class AlunoController extends Controller
                     'mensagem' => 'O tempo maximo para realizar a prova foi excedido.'
                 ]);
             }
-    //----------------------------------------------------------------------------------------
+            //----------------------------------------------------------------------------------------
             $totalQuestoes = DB::table('questaos')->count();
-    
+
             // Obtém o número de questões respondidas pelo aluno
             $questoesRespondidas = DB::table('assinalas')
                 ->where('id_aluno', $aluno_id)
                 ->distinct('id_questao')
                 ->count('id_questao');
-    
-            
-            $provaRespondida = $questoesRespondidas >= $totalQuestoes? true : false;
+
+
+            $provaRespondida = $questoesRespondidas >= $totalQuestoes ? true : false;
 
             return response()->json([
                 'provaEncerrada' => false,
                 'provaRespondida' => $provaRespondida
             ]);
-
         } catch (Exception $e) {
             return response()->json([
-                'error' => 'Erro ao processar a requisicao', 
+                'error' => 'Erro ao processar a requisicao',
                 'message' => $e->getMessage()
             ], 500);
         }
