@@ -141,9 +141,9 @@ class AlunoController extends Controller
                 'codigo' => $request['codigo_escola'],
                 'usuario' => $usuario,
                 'senha' => $senha,
-                'linkPortal' => 'http://localhost:5173/',
+                'linkPortal' => 'https://olimpiadasdosertaoprodutivo.com/',
                 'linkEmailDuvida' => "mailto:support@olimpiadasdosertaoprodutivo.com?subject=$nomeAluno' - Dúvida em relação a Olímpiadas",
-                'linkLogo' =>  'http://localhost:8000/api/img/public/logo'
+                'linkLogo' =>  'https://api.olimpiadasdosertaoprodutivo.com/api/img/public/logo'
             ];
             $email = new DadosAluno($dados);
             Mail::to($request['email'])->send($email);
@@ -180,6 +180,19 @@ class AlunoController extends Controller
         $aluno['id_area'] = $request['id_area1'];
         $aluno['id_area2'] = $request['id_area2'];
         $aluno->save();
+        $nomeAluno = $request['nome'];
+        $dados = [
+            'nomeResponsavel' => $request['nome_responsavel'],
+            'nomeAluno' => $nomeAluno,
+            'codigo' => $request['codigo_escola'],
+            'usuario' => $aluno['usuario'],
+            'senha' => $aluno['senha'],
+            'linkPortal' => 'https://olimpiadasdosertaoprodutivo.com/',
+            'linkEmailDuvida' => "mailto:support@olimpiadasdosertaoprodutivo.com?subject=$nomeAluno' - Dúvida em relação a Olímpiadas",
+            'linkLogo' =>  'https://api.olimpiadasdosertaoprodutivo.com/api/img/public/logo'
+        ];
+        $email = new DadosAluno($dados);
+        Mail::to($request['email'])->send($email);
         return response()->json(["msg" => "Cadastro do Aluno(a) $aluno->nome atualizado com sucesso"], 200);
     }
     public function delete(Request $request)
@@ -246,7 +259,6 @@ class AlunoController extends Controller
         $aluno_id = $this->retornaID(Auth::user()->username);
         $aluno_id = $aluno_id['id'];
         // Verifica se a questão já foi respondida
-        #TODO ver porque a questão retorna repetida. o erro provavelmente é por causa do numeral.
         $questao = DB::select('SELECT qt.id_questao, qt.id_alternativa_assinalada, q.path_img, q.titulo from questao_temporarias qt inner join questaos q on q.id = qt.id_questao where qt.numeralQuestao = ? and qt.id_aluno = ?', [$request['numero_questao'], $aluno_id]);
         if (count($questao) > 0) {
 
