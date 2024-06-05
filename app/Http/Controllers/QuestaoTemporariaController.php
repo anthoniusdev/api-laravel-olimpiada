@@ -54,10 +54,10 @@ class QuestaoTemporariaController extends Controller
                     'id_questao' => $request->input('id_questao'),
                     'id_alternativa_assinalada' => $request->input('id_alternativa_assinalada')
                 ]);
+                return response()->json([
+                    'msg' => "Questao " . $request['numero_questao'] . " assinalada temporariamente"
+                ]);
             }
-            return response()->json([
-                'msg' => "Questao " . $request['numero_questao'] . " assinalada temporariamente"
-            ]);
         } catch (Exception $e) {
             return response()->json([
                 'ok' => false,

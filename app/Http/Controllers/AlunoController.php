@@ -246,8 +246,10 @@ class AlunoController extends Controller
         $aluno_id = $this->retornaID(Auth::user()->username);
         $aluno_id = $aluno_id['id'];
         // Verifica se a questão já foi respondida
+        #TODO ver porque a questão retorna repetida. o erro provavelmente é por causa do numeral.
         $questao = DB::select('SELECT qt.id_questao, qt.id_alternativa_assinalada, q.path_img, q.titulo from questao_temporarias qt inner join questaos q on q.id = qt.id_questao where qt.numeralQuestao = ? and qt.id_aluno = ?', [$request['numero_questao'], $aluno_id]);
         if (count($questao) > 0) {
+
             $questao = $questao[array_rand($questao)];
             $alternativas = DB::select('SELECT id, texto as alternativa FROM alternativas WHERE id_questao = ?', [$questao->id_questao]);
         } else {
@@ -258,7 +260,7 @@ class AlunoController extends Controller
                 $modalidade_aluno = Aluno::select('modalidade')->where('id', $aluno_id)->first();
             }
             // Prepara a consulta para obter uma questão que não foi respondida
-            $questoesNaoRespondidas = DB::select('SELECT q.id, q.titulo, q.path_img FROM questaos q INNER JOIN provas p ON p.id = q.id_prova INNER JOIN areas a ON a.id = p.id_area WHERE ? NOT IN (SELECT numeralQuestao FROM questao_temporarias WHERE id_aluno = ?) AND p.modalidade = ? AND p.id_area = ?', [$request['numero_questao'], $aluno_id, $modalidade_aluno->modalidade, $request['id_area']]);
+            $questoesNaoRespondidas = DB::select('SELECT q.id, q.titulo, q.path_img FROM questaos q INNER JOIN provas p ON p.id = q.id_prova INNER JOIN areas a ON a.id = p.id_area WHERE ? NOT IN (SELECT numeralQuestao FROM questao_temporarias WHERE id_aluno = ?) AND p.modalidade = ? AND p.id_area = ? and q.id not in (SELECT id_questao FROM questao_temporarias WHERE id_aluno = ?)', [$request['numero_questao'], $aluno_id, $modalidade_aluno->modalidade, $request['id_area'], $aluno_id]);
 
             if (count($questoesNaoRespondidas) > 0) {
                 // Seleciona uma questão aleatória do array de questões não respondidas

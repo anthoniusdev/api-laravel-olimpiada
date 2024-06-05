@@ -7,6 +7,7 @@ use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class AssinaladasController extends Controller
 {
@@ -41,14 +42,28 @@ class AssinaladasController extends Controller
     public function store(Request $request)
     {
         try {
-            $id_aluno = Auth::user()->id;
+            $aluno_id = $this->retornaID(Auth::user()->username);
+            $aluno_id = $aluno_id['id'];
+
+
             $assinala_questao = Assinala::create([
-                'id_aluno' => $id_aluno,
+                'id_aluno' => $aluno_id,
                 'id_questao' => $request->input('id_questao'),
                 'id_alternativa_assinalada' => $request->input('id_alternativa_assinalada')
             ]);
-            $this->resposta(200, true, 'Questao assinalada', $assinala_questao);
-        
+
+            $alunoController = new AlunoController();
+            $resultado = $alunoController->validarProvaRespondida($request);
+
+            //tratando a resposta json retornada pela funcao
+            $status_prova = json_decode($resultado->getContent(), true);
+
+            return response()->json([
+                'ok' => true,
+                'msg' => 'Questao assinalada',
+                'assinala_questao' => $assinala_questao,
+                'status_prova' => $status_prova
+            ], 200);
         } catch (Exception $e) {
             return response()->json([
                 'ok' => false,
@@ -56,6 +71,13 @@ class AssinaladasController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+    public static function retornaID($username)
+    {
+        $id = DB::select('SELECT id FROM alunos WHERE usuario = ?', [$username]);
+        foreach ($id as $ids) {
+            return ["id" => $ids->id];
+        };
     }
 
     /**
