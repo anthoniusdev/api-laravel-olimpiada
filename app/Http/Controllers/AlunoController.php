@@ -9,15 +9,11 @@ use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\DadosAluno;
 use App\Models\Area;
-use App\Models\Assinala;
 use App\Models\Escola;
-use App\Models\Questao;
-use App\Models\QuestaoTemporaria;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Redis;
 use Exception;
 
 
