@@ -179,19 +179,6 @@ class AlunoController extends Controller
         $aluno['id_area'] = $request['id_area1'];
         $aluno['id_area2'] = $request['id_area2'];
         $aluno->save();
-        $nomeAluno = $request['nome'];
-        $dados = [
-            'nomeResponsavel' => $request['nome_responsavel'],
-            'nomeAluno' => $nomeAluno,
-            'codigo' => $request['codigo_escola'],
-            'usuario' => $aluno['usuario'],
-            'senha' => 'senha informada no email anterior',
-            'linkPortal' => 'https://olimpiadasdosertaoprodutivo.com/',
-            'linkEmailDuvida' => "mailto:support@olimpiadasdosertaoprodutivo.com?subject=$nomeAluno' - Dúvida em relação a Olímpiadas",
-            'linkLogo' =>  'https://api.olimpiadasdosertaoprodutivo.com/api/img/public/logo'
-        ];
-        $email = new DadosAluno($dados);
-        Mail::to($request['email'])->send($email);
         return response()->json(["msg" => "Cadastro do Aluno(a) $aluno->nome atualizado com sucesso"], 200);
     }
     public function delete(Request $request)
@@ -260,14 +247,8 @@ class AlunoController extends Controller
         // Verifica se a questão já foi respondida
         $questao = DB::select('SELECT qt.id_questao, qt.id_alternativa_assinalada, q.path_img, q.titulo from questao_temporarias qt inner join questaos q on q.id = qt.id_questao where qt.numeralQuestao = ? and qt.id_aluno = ?', [$request['numero_questao'], $aluno_id]);
         if (count($questao) > 0) {
-
             $questao = $questao[array_rand($questao)];
             $alternativas = DB::select('SELECT id, texto as alternativa FROM alternativas WHERE id_questao = ?', [$questao->id_questao]);
-            if($request['id_area'] == Area::select('id')->where('nome', 'Empreendorismo e Inovação')){
-                $modalidade_aluno = 'a';
-            }else{
-                $modalidade_aluno = Aluno::select('modalidade')->where('id', $aluno_id)->first();
-            }
         } else {
             // obtendo a modalidade do aluno
             if($request['id_area'] == Area::select('id')->where('nome', 'Empreendorismo e Inovação')){
