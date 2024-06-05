@@ -48,12 +48,13 @@ class QuestaoTemporariaController extends Controller
                     'msg' => 'Resposta atualizada com sucesso'
                 ]);
             } else {
-                QuestaoTemporaria::create([
+                $dados_questao = [
                     'numeralQuestao' => $request->input('numero_questao'),
                     'id_aluno' => $id_aluno,
                     'id_questao' => $request->input('id_questao'),
                     'id_alternativa_assinalada' => $request->input('id_alternativa_assinalada')
-                ]);
+                ];
+                QuestaoTemporaria::create($dados_questao);
                 return response()->json([
                     'msg' => "Questao " . $request['numero_questao'] . " assinalada temporariamente"
                 ]);

@@ -175,7 +175,6 @@ class AlunoController extends Controller
     {
         $aluno = Aluno::where('cpf', $request['cpf'])->first();
         $aluno['nome'] = $request['nome'];
-        $aluno['email'] = $request['email'];
         $aluno['modalidade'] = $request['modalidade'];
         $aluno['id_area'] = $request['id_area1'];
         $aluno['id_area2'] = $request['id_area2'];
@@ -186,7 +185,7 @@ class AlunoController extends Controller
             'nomeAluno' => $nomeAluno,
             'codigo' => $request['codigo_escola'],
             'usuario' => $aluno['usuario'],
-            'senha' => $aluno['senha'],
+            'senha' => 'senha informada no email anterior',
             'linkPortal' => 'https://olimpiadasdosertaoprodutivo.com/',
             'linkEmailDuvida' => "mailto:support@olimpiadasdosertaoprodutivo.com?subject=$nomeAluno' - Dúvida em relação a Olímpiadas",
             'linkLogo' =>  'https://api.olimpiadasdosertaoprodutivo.com/api/img/public/logo'
@@ -264,13 +263,20 @@ class AlunoController extends Controller
 
             $questao = $questao[array_rand($questao)];
             $alternativas = DB::select('SELECT id, texto as alternativa FROM alternativas WHERE id_questao = ?', [$questao->id_questao]);
-        } else {
-            // obtendo a modalidade do aluno
             if($request['id_area'] == Area::select('id')->where('nome', 'Empreendorismo e Inovação')){
                 $modalidade_aluno = 'a';
             }else{
                 $modalidade_aluno = Aluno::select('modalidade')->where('id', $aluno_id)->first();
             }
+        } else {
+            // obtendo a modalidade do aluno
+            if($request['id_area'] == Area::select('id')->where('nome', 'Empreendorismo e Inovação')){
+                $modalidade_aluno = 'a';
+            }else{
+            echo "veio p linha 278, idaluno=" . $aluno_id;
+                $modalidade_aluno = Aluno::select('modalidade')->where('id', $aluno_id)->first();
+            }
+            echo $modalidade_aluno;
             // Prepara a consulta para obter uma questão que não foi respondida
             $questoesNaoRespondidas = DB::select('SELECT q.id, q.titulo, q.path_img FROM questaos q INNER JOIN provas p ON p.id = q.id_prova INNER JOIN areas a ON a.id = p.id_area WHERE ? NOT IN (SELECT numeralQuestao FROM questao_temporarias WHERE id_aluno = ?) AND p.modalidade = ? AND p.id_area = ? and q.id not in (SELECT id_questao FROM questao_temporarias WHERE id_aluno = ?)', [$request['numero_questao'], $aluno_id, $modalidade_aluno->modalidade, $request['id_area'], $aluno_id]);
 
@@ -287,7 +293,8 @@ class AlunoController extends Controller
         }
         return response()->json([
             'questao' => $questao,
-            'alternativas' => $alternativas
+            'alternativas' => $alternativas,
+            'modalidade_aluno' => $modalidade_aluno->modalidade
         ]);
     }
     
