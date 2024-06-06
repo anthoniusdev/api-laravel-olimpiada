@@ -26,6 +26,7 @@ class QuestaoTemporariaController extends Controller
             return ["id" => $ids->id];
         };
     }
+
     /**
      * Display a listing of the resource.
      */
@@ -40,8 +41,9 @@ class QuestaoTemporariaController extends Controller
     public function store(Request $request)
     {
         try {
-            $id_aluno = $this->retornaID(Auth::user()->username, 'alunos')['id'];
-            $questaoTemporaria = QuestaoTemporaria::where('id_aluno', $id_aluno)->where('id_questao', $request['id_questao'])->update(['id_alternativa_assinalada' => $request['id_alternativa_assinalada']]);
+            $aluno_id = $this->retornaID($request['usuario']);
+            $aluno_id = $aluno_id['id'];
+            $questaoTemporaria = QuestaoTemporaria::where('id_aluno', $aluno_id)->where('id_questao', $request['id_questao'])->update(['id_alternativa_assinalada' => $request['id_alternativa_assinalada']]);
             if ($questaoTemporaria > 0) {
                 return response()->json([
                     'ok' => true,
@@ -50,7 +52,7 @@ class QuestaoTemporariaController extends Controller
             } else {
                 $dados_questao = [
                     'numeralQuestao' => $request->input('numero_questao'),
-                    'id_aluno' => $id_aluno,
+                    'id_aluno' => $aluno_id,
                     'id_questao' => $request->input('id_questao'),
                     'id_alternativa_assinalada' => $request->input('id_alternativa_assinalada')
                 ];
