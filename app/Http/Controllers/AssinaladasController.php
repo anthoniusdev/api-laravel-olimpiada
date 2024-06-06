@@ -42,7 +42,7 @@ class AssinaladasController extends Controller
     public function store(Request $request)
     {
         try {
-            $aluno_id = $this->retornaID(Auth::user()->username);
+            $aluno_id = $this->retornaID($request['usuario']);
             $aluno_id = $aluno_id['id'];
 
 
@@ -79,6 +79,7 @@ class AssinaladasController extends Controller
             return ["id" => $ids->id];
         };
     }
+
 
     /**
      * Display the specified resource.
