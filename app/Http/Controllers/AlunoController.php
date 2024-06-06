@@ -317,7 +317,7 @@ class AlunoController extends Controller
             $aluno_id = $aluno_id['id'];
 
             // Obtém a data e hora de criação da prova para o aluno
-            $prova = DB::table('assinalas')//acho q será a tabela questao_temporarias
+            $prova = DB::table('questao_temporarias')//acho q será a tabela questao_temporarias
                 ->where('id_aluno', $aluno_id)
                 ->orderBy('created_at', 'asc')
                 ->first();
@@ -346,7 +346,7 @@ class AlunoController extends Controller
             // Obtém o número de questões respondidas pelo aluno
             $questoesRespondidas = DB::table('assinalas')
                 ->where('id_aluno', $aluno_id)
-                ->distinct('id_questao')
+                ->distinct('id_questao') 
                 ->count('id_questao');
     
             
