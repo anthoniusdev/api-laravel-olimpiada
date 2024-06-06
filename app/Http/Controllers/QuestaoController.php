@@ -55,7 +55,10 @@ class QuestaoController extends Controller
                 
                 Questao::create($questao);
         
-                $this->resposta(200, true, "Questao cadastrada com sucesso!");
+                $this->resposta(200, true, [
+                    'msg' =>  "Questao cadastrada com sucesso!",
+                    'id da questao' => $idQuestao
+                ]);
         
             } catch (Exception $e) {
                 return response()->json([
@@ -68,7 +71,23 @@ class QuestaoController extends Controller
 
     }
 
-
+    public function cadastraAlternativaCorreta(Request $request){
+        try{
+        $questao = Questao::where('id', $request['id_questao'])->update(['id_alternativa_correta' => $request['id_alternativa_correta']]);
+        if ($questao > 0) {
+            return response()->json([
+                'ok' => true,
+                'msg' => 'Alternativa correta alterada com sucesso',
+                'questao' => $questao
+            ]);
+        }}catch(Exception $e){
+            return response()->json([
+                'ok' => false,
+                'msg' => 'Erro ao cadastrar a alternativa correta',
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
     /**
      * Display the specified resource.
      */
