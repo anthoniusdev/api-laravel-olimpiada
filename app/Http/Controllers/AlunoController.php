@@ -271,10 +271,13 @@ class AlunoController extends Controller
                 $alternativas = null;
             }
         }
-        return response()->json([
+        response()->json([
             'questao' => $questao,
             'alternativas' => $alternativas,
-        ]);
+        ])->withHeaders([
+            'Content-Type' => 'application/json',
+            'Access-Control-Allow-Origin' => 'https://olimpiadasdosertaoprodutivo.com/'
+        ])->send();
     }
     // public function validarProvaRespondida(Request $request)
     // {

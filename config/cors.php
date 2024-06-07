@@ -23,7 +23,7 @@ return [
         'https://www.olimpiadasdosertaoprodutivo.com/',
         'https://www.olimpiadasdosertaoprodutivo.com',
         'https://olimpiadas-cientificas.vercel.app',
-        'http://localhost:5173'
+        'http://localhost:5173',
         // Adicione outras origens permitidas conforme necessário
     ],
 
