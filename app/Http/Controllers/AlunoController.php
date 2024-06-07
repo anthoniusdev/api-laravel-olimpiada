@@ -304,16 +304,15 @@ class AlunoController extends Controller
     //     }
     // }
     public function verificarTempoProva(Request $request){
-        $aluno_id = $this->retornaID(Auth::user()->username);
+        $aluno_id = $this->retornaID($request['usuario']);
         $aluno_id = $aluno_id['id'];
-
+        
         // Obtém a data e hora de criação da prova para o aluno
         $prova = DB::table('questao_temporarias')
             ->where('id_aluno', $aluno_id)
             ->orderBy('created_at', 'asc')
             ->first();
 
-        // Verifica se a prova foi iniciada
         if (!$prova) {
             return response()->json([
                 'error' => 'Prova nao iniciada'
