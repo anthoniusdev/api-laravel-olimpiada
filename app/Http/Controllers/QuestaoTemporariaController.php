@@ -61,7 +61,9 @@ class QuestaoTemporariaController extends Controller
                     'numeralQuestao' => $request->input('numero_questao'),
                     'id_aluno' => $aluno_id,
                     'id_questao' => $request->input('id_questao'),
-                    'id_alternativa_assinalada' => $request->input('id_alternativa_assinalada')
+                    'id_alternativa_assinalada' => $request->input('id_alternativa_assinalada'),
+                    'created_at' => now(),
+                    'updated_at' => now()
                 ];
                 QuestaoTemporaria::create($dados_questao);
                 return response()->json([

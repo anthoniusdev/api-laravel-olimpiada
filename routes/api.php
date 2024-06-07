@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\AlunoController;
+use App\Http\Controllers\AssinaladasController;
 use App\Http\Controllers\EscolaController;
 use App\Http\Controllers\ProvaController;
 use App\Http\Controllers\QuestaoTemporariaController;
@@ -32,15 +33,14 @@ Route::prefix('/aluno')->group(function () {
         Route::post('/logout', [AlunoController::class, 'logout']);
         Route::put('/update', [AlunoController::class, 'update']);
         Route::delete('/delete', [AlunoController::class, 'delete']);
-        Route::prefix('/prova')->group(function(){
+        Route::prefix('/prova')->group(function () {
             Route::post('status', [ProvaController::class, 'getStatus']);
             Route::post('/iniciar_prova', [ProvaController::class, 'iniciarProva']);
-            Route::post('finalizar_prova', [ProvaController::class, 'finalizarProva']);
+            Route::post('/finalizar_prova', [ProvaController::class, 'finalizarProva']);
             Route::post('/add_prova', [ProvaController::class, 'store']);
-                        Route::get('/verifica_tempo', [AlunoController::class, 'verificarTempoProva']);
-
-            Route::post('/prova_respondida', [AlunoController::class, 'validarProvaRespondida']);
-            Route::prefix('/questao')->group(function(){
+            Route::get('/verifica_tempo', [AlunoController::class, 'verificarTempoProva']);
+            Route::post('/prova_respondida', [AssinaladasController::class, 'store']);
+            Route::prefix('/questao')->group(function () {
                 Route::get('/', [AlunoController::class, 'obterQuestaoAleatoria']);
                 Route::post('/assinalar_temp', [QuestaoTemporariaController::class, 'store']);
             });

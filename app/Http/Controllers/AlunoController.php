@@ -244,20 +244,21 @@ class AlunoController extends Controller
         $aluno_id = $this->retornaID($request['usuario']);
         $aluno_id = $aluno_id['id'];
         // Obtém a modalidade de aluno -- funcionando
-        if ($request['id_area'] == Area::select('id')->where('nome', 'Empreendorismo e Inovação')) {
+        if ($request['id_area'] == 'IL933QzqrGA5eO4z') {
             $modalidade_aluno = 'a';
         } else {
             $modalidade_aluno = Aluno::select('modalidade')->where('id', $aluno_id)->first();
+            $modalidade_aluno = $modalidade_aluno->modalidade;
         }
         // Verificando se a questão já foi resgastada
-        $questao = DB::select('SELECT q.id , qt.id_alternativa_assinalada, q.path_img, q.titulo from questao_temporarias qt inner join questaos q on q.id = qt.id_questao inner join provas p on q.id_prova = p.id inner join areas a on a.id = p.id_area where qt.numeralQuestao = ? and qt.id_aluno = ? and p.modalidade = ? and a.id = ?', [$request['numero_questao'], $aluno_id, $modalidade_aluno['modalidade'], $request['id_area']]);
+        $questao = DB::select('SELECT q.id , qt.id_alternativa_assinalada, q.path_img, q.titulo from questao_temporarias qt inner join questaos q on q.id = qt.id_questao inner join provas p on q.id_prova = p.id inner join areas a on a.id = p.id_area where qt.numeralQuestao = ? and qt.id_aluno = ? and p.modalidade = ? and a.id = ?', [$request['numero_questao'], $aluno_id, $modalidade_aluno, $request['id_area']]);
         if (count($questao) > 0) { // Se sim, é só pegar as alternativas
             $questao = $questao[0];
             $alternativas = DB::select('SELECT id, texto as alternativa FROM alternativas WHERE id_questao = ?', [$questao->id]);
         } else { // Se não, tem que preparar questões novas
 
             // Prepara a consulta para obter uma questão que não foi resgastada
-            $questoesNaoRespondidas = DB::select('SELECT q.id, q.titulo, q.path_img FROM questaos q INNER JOIN provas p ON p.id = q.id_prova INNER JOIN areas a ON a.id = p.id_area WHERE p.modalidade = ? AND p.id_area = ? and q.id not in (SELECT id_questao FROM questao_temporarias WHERE id_aluno = ?)', [$modalidade_aluno->modalidade, $request['id_area'], $aluno_id]);
+            $questoesNaoRespondidas = DB::select('SELECT q.id, q.titulo, q.path_img FROM questaos q INNER JOIN provas p ON p.id = q.id_prova INNER JOIN areas a ON a.id = p.id_area WHERE p.modalidade = ? AND p.id_area = ? and q.id not in (SELECT id_questao FROM questao_temporarias WHERE id_aluno = ?)', [$modalidade_aluno, $request['id_area'], $aluno_id]);
             if (count($questoesNaoRespondidas) > 0) {
                 // Seleciona uma questão aleatória do array de questões não resgastadas
                 $questao = $questoesNaoRespondidas[array_rand($questoesNaoRespondidas)];
@@ -307,9 +308,8 @@ class AlunoController extends Controller
         $aluno_id = $aluno_id['id'];
         
         // Obtém a data e hora de criação da prova para o aluno
-        $prova = DB::table('questao_temporarias')
-            ->where('id_aluno', $aluno_id)
-            ->orderBy('created_at', 'asc')
+        $prova = DB::table('respondes')
+            ->where('id_aluno', $aluno_id)->where('')
             ->first();
 
         if (!$prova) {
