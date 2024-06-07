@@ -44,18 +44,17 @@ class QuestaoTemporariaController extends Controller
             $aluno_id = $this->retornaID($request['usuario']);
             $aluno_id = $aluno_id['id'];
 
-            $alunoController = new AlunoController();
-            $resultado = $alunoController->verificarTempoProva($request);
+            // $alunoController = new AlunoController();
+            // $resultado = $alunoController->verificarTempoProva($request);
 
-            //tratando a resposta json retornada pela funcao
-            $status_prova = json_decode($resultado->getContent(), true);
+            // //tratando a resposta json retornada pela funcao
+            // $status_prova = json_decode($resultado->getContent(), true);
 
             $questaoTemporaria = QuestaoTemporaria::where('id_aluno', $aluno_id)->where('id_questao', $request['id_questao'])->update(['id_alternativa_assinalada' => $request['id_alternativa_assinalada']]);
             if ($questaoTemporaria > 0) {
                 return response()->json([
                     'ok' => true,
                     'msg' => 'Resposta atualizada com sucesso',
-                    'status_prova' => $status_prova
                 ]);
             } else {
                 $dados_questao = [
@@ -67,7 +66,6 @@ class QuestaoTemporariaController extends Controller
                 QuestaoTemporaria::create($dados_questao);
                 return response()->json([
                     'msg' => "Questao " . $request['numero_questao'] . " assinalada temporariamente",
-                    'status_prova' => $status_prova
                 ]);
             }
 
