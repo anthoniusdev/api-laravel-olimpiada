@@ -15,15 +15,7 @@ use Illuminate\Support\Facades\DB;
 
 class AssinaladasController extends Controller
 {
-    function resposta($codigo, $ok, $msg, $assinalada)
-    {
-        http_response_code($codigo);
-        echo (json_encode([
-            'ok' => $ok,
-            'msg' => $msg,
-            'fase' => $assinalada
-        ]));
-    }
+
     /**
      * Display a listing of the resource.
      */
@@ -60,17 +52,10 @@ class AssinaladasController extends Controller
                     'id_alternativa_assinalada' => $questao->id_alternativa_assinalada
                 ]);
             }
-            // $alunoController = new AlunoController();
-            // $resultado = $alunoController->validarProvaRespondida($request);
-
-            // //tratando a resposta json retornada pela funcao
-            // $status_prova = json_decode($resultado->getContent(), true);
 
             return response()->json([
                 'ok' => true,
                 'msg' => 'Prova assinalada',
-                // 'assinala_questao' => $assinala_questao,
-                // 'status_prova' => $status_prova
             ], 200);
         } catch (Exception $e) {
             return response()->json([

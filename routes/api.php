@@ -44,7 +44,9 @@ Route::prefix('/aluno')->group(function () {
             Route::post('/iniciar_prova', [ProvaController::class, 'iniciarProva']);
             Route::post('finalizar_prova', [ProvaController::class, 'finalizarProva']);
             Route::post('/add_prova', [ProvaController::class, 'store']);
-            Route::get('/prova_respondida', [AssinaladasController::class, 'store']);
+            Route::get('/verifica_tempo', [AlunoController::class, 'verificarTempoProva']);
+
+            Route::get('/prova_respondida', [AlunoController::class, 'validarProvaRespondida']);
             Route::prefix('/questao')->group(function(){
                 Route::get('/', [AlunoController::class, 'obterQuestaoAleatoria']);
                 Route::post('/assinalar_temp', [QuestaoTemporariaController::class, 'store']);

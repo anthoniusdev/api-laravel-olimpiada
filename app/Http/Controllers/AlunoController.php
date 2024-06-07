@@ -264,68 +264,71 @@ class AlunoController extends Controller
                 $questao = $questoesNaoRespondidas[array_rand($questoesNaoRespondidas)];
 
                 $alternativas = DB::select('SELECT id, texto as alternativa FROM alternativas WHERE id_questao = ?', [$questao->id]);
-                DB::insert('INSERT INTO questao_temporarias (id_aluno, id_questao, id_alternativa_assinalada, numeralQuestao) values (?, ?, ?, ?)', [$aluno_id, $questao->id, null, $request['numero_questao']]);
             } else {
                 $questao = null;
                 $alternativas = null;
             }
-        }
+        
         return response()->json([
             'questao' => $questao,
             'alternativas' => $alternativas,
         ]);
     }
+}
+    // public function validarProvaRespondida(Request $request)
+    // {
+    //     try {
+    //         $aluno_id = $this->retornaID(Auth::user()->username);
+    //         $aluno_id = $aluno_id['id'];
 
-    public function validarProvaRespondida(Request $request)
-    {
-        try {
-            $aluno_id = $this->retornaID($request['usuario']);
-            $aluno_id = $aluno_id['id'];
-            // Obtém a data e hora de criação da prova para o aluno
-            $prova = DB::table('assinalas') //acho q será a tabela questao_alternativa
-                ->where('id_aluno', $aluno_id)
-                ->orderBy('created_at', 'asc')
-                ->first();
+    //         $totalQuestoes = DB::table('questaos')->count();
 
-            // Verifica se a prova foi iniciada
-            if (!$prova) {
-                return response()->json([
-                    'error' => 'Prova nao encontrada'
-                ], 404);
-            }
-
-            // Calcula o tempo decorrido desde o início da prova
-            $inicioProva = Carbon::parse($prova->created_at);
-            $tempoDecorrido = $inicioProva->diffInMinutes(Carbon::now());
-
-            //verifica com qtd de minutos
-            if ($tempoDecorrido > 120) {
-                return response()->json([
-                    'provaEncerrada' => true,
-                    'mensagem' => 'O tempo maximo para realizar a prova foi excedido.'
-                ]);
-            }
-            //----------------------------------------------------------------------------------------
-            $totalQuestoes = DB::table('questaos')->count();
-
-            // Obtém o número de questões respondidas pelo aluno
-            $questoesRespondidas = DB::table('assinalas')
-                ->where('id_aluno', $aluno_id)
-                ->distinct('id_questao')
-                ->count('id_questao');
+    //         // Obtém o número de questões respondidas pelo aluno
+    //         $questoesRespondidas = DB::table('questao_temporarias')
+    //             ->where('id_aluno', $aluno_id)
+    //             ->distinct('id_questao') 
+    //             ->count('id_questao');
 
 
-            $provaRespondida = $questoesRespondidas >= $totalQuestoes ? true : false;
+    //         $provaRespondida = $questoesRespondidas >= $totalQuestoes ? true : false;
 
+    //         return response()->json([
+    //             'prova_encerrada' => false,
+    //             'prova_respondida' => $provaRespondida
+    //         ]);
+    //     } catch (Exception $e) {
+    //         return response()->json([
+    //             'error' => 'Erro ao processar a requisicao',
+    //             'message' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+    public function verificarTempoProva(Request $request){
+        $aluno_id = $this->retornaID($request['usuario']);
+        $aluno_id = $aluno_id['id'];
+        
+        // Obtém a data e hora de criação da prova para o aluno
+        $prova = DB::table('questao_temporarias')
+            ->where('id_aluno', $aluno_id)
+            ->orderBy('created_at', 'asc')
+            ->first();
+
+        if (!$prova) {
             return response()->json([
-                'provaEncerrada' => false,
-                'provaRespondida' => $provaRespondida
+                'error' => 'Prova nao iniciada'
+            ], 404);
+        }
+
+        // Calcula o tempo decorrido desde o início da prova
+        $inicioProva = Carbon::parse($prova->created_at);
+        $tempoDecorrido = $inicioProva->diffInMinutes(Carbon::now());
+
+        //verifica com qtd de minutos
+        if ($tempoDecorrido > 120) {
+            return response()->json([
+                'prova_encerrada' => true,
+                'mensagem' => 'O tempo maximo para realizar a prova foi excedido.'
             ]);
-        } catch (Exception $e) {
-            return response()->json([
-                'error' => 'Erro ao processar a requisicao',
-                'message' => $e->getMessage()
-            ], 500);
         }
     }
 }

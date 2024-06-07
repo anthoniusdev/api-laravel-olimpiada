@@ -73,7 +73,7 @@ class QuestaoController extends Controller
 
     public function cadastraAlternativaCorreta(Request $request){
         try{
-        $questao = Questao::where('id', $request['id_questao'])->update(['id_alternativa_correta' => $request['id_alternativa_correta']]);
+            $questao = Questao::where('id', $request['id_questao'])->update(['id_alternativa_correta' => $request['id_alternativa_correta']]);
         if ($questao > 0) {
             return response()->json([
                 'ok' => true,
