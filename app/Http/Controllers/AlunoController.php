@@ -263,17 +263,17 @@ class AlunoController extends Controller
                 $questao = $questoesNaoRespondidas[array_rand($questoesNaoRespondidas)];
 
                 $alternativas = DB::select('SELECT id, texto as alternativa FROM alternativas WHERE id_questao = ?', [$questao->id]);
+                DB::insert('INSERT INTO questao_temporarias (id_aluno, id_questao, id_alternativa_assinalada, numeralQuestao) values (?, ?, ?, ?)', [$aluno_id, $questao->id, null, $request['numero_questao']]);
             } else {
                 $questao = null;
                 $alternativas = null;
             }
-        
+        }
         return response()->json([
             'questao' => $questao,
             'alternativas' => $alternativas,
         ]);
     }
-}
     // public function validarProvaRespondida(Request $request)
     // {
     //     try {
