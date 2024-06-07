@@ -8,7 +8,6 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class AssinaladasController extends Controller
 {
@@ -35,7 +34,7 @@ class AssinaladasController extends Controller
     public function store(Request $request)
     {
         try {
-            $aluno_id = $this->retornaID(Auth::user()->username);
+            $aluno_id = $this->retornaID($request['usuario']);
             $aluno_id = $aluno_id['id'];
 
 
@@ -50,14 +49,13 @@ class AssinaladasController extends Controller
 
             //tratando a resposta json retornada pela funcao
             $status_prova = json_decode($resultado->getContent(), true);
-            
+
             return response()->json([
                 'ok' => true,
                 'msg' => 'Questao assinalada',
                 'assinala_questao' => $assinala_questao,
                 'status_prova' => $status_prova
             ], 200);
-            
         } catch (Exception $e) {
             return response()->json([
                 'ok' => false,
@@ -73,6 +71,8 @@ class AssinaladasController extends Controller
             return ["id" => $ids->id];
         };
     }
+
+
     /**
      * Display the specified resource.
      */

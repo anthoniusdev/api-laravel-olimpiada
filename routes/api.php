@@ -8,6 +8,7 @@ use App\Http\Controllers\ProvaController;
 use App\Http\Controllers\QuestaoController;
 use App\Http\Controllers\AssinaladasController;
 use App\Http\Controllers\QuestaoTemporariaController;
+use App\Models\QuestaoTemporaria;
 use Illuminate\Support\Facades\Route;
 
 
@@ -17,6 +18,9 @@ Route::middleware('auth:sanctum')->group(function () {
         return ["isAuthenticated" => true];
     });
 });
+Route::post('/add_questao', [QuestaoController::class, 'store']);
+Route::post('/add_alternativa', [AlternativaController::class, 'store']);
+Route::post('/add_alternativa_correta', [QuestaoController::class, 'cadastraAlternativaCorreta']);
 
 Route::prefix('/escola')->group(function () {
     Route::post('/cadastro', [EscolaController::class, 'store']);
@@ -39,8 +43,7 @@ Route::prefix('/aluno')->group(function () {
             Route::get('/prova_respondida', [AlunoController::class, 'validarProvaRespondida']);
             Route::prefix('/questao')->group(function(){
                 Route::get('/', [AlunoController::class, 'obterQuestaoAleatoria']);
-                Route::post('/add_questao', [QuestaoController::class, 'store']);
-                Route::post('/add_alternativa', [AlternativaController::class, 'store']);
+
                 Route::post('/assinalar', [AssinaladasController::class, 'store']);
                 Route::post('/assinalar_temp', [QuestaoTemporariaController::class, 'store']);
             });

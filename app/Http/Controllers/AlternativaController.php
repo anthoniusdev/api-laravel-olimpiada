@@ -60,7 +60,10 @@ class AlternativaController extends Controller
         
                 $alternativa = Alternativa::create($alternativa);
         
-                $this->resposta(200, true, "Alternativa criada com sucesso", $alternativa);
+                $this->resposta(200, true, [
+                    'msg' => "Alternativa criada com sucesso",
+                    'id_alternativa' => $id_alternativa
+                ], $alternativa);
                 
             } catch (Exception $e) {
                 return response()->json([
