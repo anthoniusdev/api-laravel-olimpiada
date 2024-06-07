@@ -271,12 +271,13 @@ class AlunoController extends Controller
                 $alternativas = null;
             }
         }
-        response()->json([
+        return response()->json([
             'questao' => $questao,
             'alternativas' => $alternativas,
         ])->withHeaders([
             'Content-Type' => 'application/json',
-            'Access-Control-Allow-Origin' => 'https://olimpiadasdosertaoprodutivo.com/'
+            'Access-Control-Allow-Origin' => '*',
+            'Accept' => '*'
         ])->send();
     }
     // public function validarProvaRespondida(Request $request)
@@ -307,7 +308,8 @@ class AlunoController extends Controller
     //         ], 500);
     //     }
     // }
-    public function verificarTempoProva(Request $request){
+    public function verificarTempoProva(Request $request)
+    {
         $aluno_id = $this->retornaID($request['usuario']);
         $aluno_id = $aluno_id['id'];
         if ($request['id_area'] == 'IL933QzqrGA5eO4z') {
@@ -339,7 +341,7 @@ class AlunoController extends Controller
                 'prova_encerrada' => true,
                 'mensagem' => 'O tempo maximo para realizar a prova foi excedido.'
             ]);
-        }else{
+        } else {
             return response()->json([
                 'prova_encerrada' => false,
                 'mensagem' => 'Faltam ' . 120 - $tempoDecorrido . ' minutos para acabar o tempo.'
