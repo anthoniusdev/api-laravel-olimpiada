@@ -55,6 +55,8 @@ class AssinaladasController extends Controller
                     'id_questao' => $questao->id_questao,
                     'id_alternativa_assinalada' => $questao->id_alternativa_assinalada
                 ]);
+                $assinalada = Assinala::where('id_aluno', $aluno_id)->where('id_questao', $questao->id_questao)->where('id_alternativa_assinalada', $questao->id_alternativa_assinalada)->first();
+                echo "<h6>|id do aluno: $assinalada->id_aluno --- id da questão: $assinalada->id_questao --- id da alternativa assinalada: $assinalada->id_alternativa_assinalada |</h6>";
             }
 
             return response()->json([
