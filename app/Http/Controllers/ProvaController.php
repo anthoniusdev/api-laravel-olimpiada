@@ -5,7 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Models\Prova;
+use App\Models\Responde;
 use Exception;
+use Illuminate\Support\Facades\DB;
+
+use function PHPUnit\Framework\isNull;
 
 class ProvaController extends Controller
 {
@@ -47,10 +51,10 @@ class ProvaController extends Controller
                     'id' => $id_prova,
                     'id_fase' => $request->input('id_fase'),
                     'id_area' => $request->input('id_area'),
-                    'modalidade' =>$request->input('modalidade')
+                    'modalidade' => $request->input('modalidade')
                 ]
             );
-    
+
             $this->resposta(200, true, "Prova cadastrada com sucesso!", $prova);
         } catch (Exception $e) {
             return response()->json([
@@ -59,9 +63,108 @@ class ProvaController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
-    } 
+    }
+    public static function retornaID($username)
+    {
+        $id = DB::select('SELECT id FROM alunos WHERE usuario = ?', [$username]);
+        foreach ($id as $ids) {
+            return ["id" => $ids->id];
+        };
+    }
+    public function iniciarProva(Request $request)
+    {
+        try {
+            $aluno_id = $this->retornaID($request['usuario']);
+            $aluno_id = $aluno_id['id'];
+            $id_prova = DB::select('SELECT id FROM provas WHERE modalidade = ? AND id_area = ?', [$request['modalidade'], $request['id_area']]);
+            $id_prova = $id_prova[0]->id;
+            $id = Str::uuid();
+            echo $id;
+            $dados = [
+                'id' => $id,
+                'id_prova' => $id_prova,
+                'id_aluno' => $aluno_id,
+                'status' => 'iniciada',
+                'data_hora_inicio' => now(),
+                'pontuacao' => 0,
+                'bool_classificado' => false
+            ];
+            Responde::create($dados);
+            if (Responde::where('id', $id)->exists()) {
+                return response()->json([
+                    'ok' => true,
+                    'msg' => 'Prova iniciada com sucesso'
+                ]);
+            }
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => 'Erro ao processar a requisicao',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+    public function finalizarProva(Request $request)
+    {
+        try {
+            $aluno_id = $this->retornaID($request['usuario']);
+            $aluno_id = $aluno_id['id'];
+            $id_prova = DB::select('SELECT id FROM provas WHERE modalidade = ? AND id_area = ?', [$request['modalidade'], $request['id_area']]);
+            $id_prova = $id_prova[0]->id;
+            $atualizacao = Responde::where('id_aluno', $aluno_id)->where('id_prova', $id_prova)->update(['status' => 'finalizada']);
+            if ($atualizacao > 0) {
+                return response()->json([
+                    'ok' => true,
+                    'msg' => 'Prova finalizada com sucesso'
+                ]);
+            }
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => 'Erro ao processar a requisicao',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+    public function getStatus(Request $request)
+    {
+        try {
+            $aluno_id = $this->retornaID($request['usuario'])['id'];
+            $id_prova = DB::table('provas')
+                ->where('modalidade', $request['modalidade'])
+                ->where('id_area', $request['id_area'])
+                ->value('id');
 
+            if (!$id_prova) {
+                return response()->json([
+                    'ok' => true,
+                    'status' => 'nao_iniciada'
+                ]);
+            }
 
+            $count_status = DB::table('respondes')
+                ->where('id_aluno', $aluno_id)
+                ->where('id_prova', $id_prova)
+                ->count();
+
+            if ($count_status > 0) {
+                $status = optional(
+                    Responde::select('status')
+                        ->where('id_aluno', $aluno_id)
+                        ->where('id_prova', $id_prova)
+                        ->first()
+                )->status;
+
+                return response()->json([
+                    'ok' => true,
+                    'status' => $status
+                ]);
+            }
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => 'Erro ao processar a requisicao',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 
     /**
      * Display the specified resource.

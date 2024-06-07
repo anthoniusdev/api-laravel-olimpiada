@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Exception;
-
+use Illuminate\Support\Facades\Redis;
 
 class AlunoController extends Controller
 {
@@ -279,7 +279,7 @@ class AlunoController extends Controller
     public function validarProvaRespondida(Request $request)
     {
         try {
-            $aluno_id = $this->retornaID(Auth::user()->username);
+            $aluno_id = $this->retornaID($request['usuario']);
             $aluno_id = $aluno_id['id'];
             // Obtém a data e hora de criação da prova para o aluno
             $prova = DB::table('assinalas') //acho q será a tabela questao_alternativa
