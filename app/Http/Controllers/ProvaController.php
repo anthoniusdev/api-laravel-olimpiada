@@ -9,7 +9,6 @@ use App\Models\Responde;
 use Exception;
 use Illuminate\Support\Facades\DB;
 
-use function PHPUnit\Framework\isNull;
 
 class ProvaController extends Controller
 {
