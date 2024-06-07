@@ -156,6 +156,11 @@ class ProvaController extends Controller
                     'ok' => true,
                     'status' => $status
                 ]);
+            }else{
+                return response()->json([
+                    'ok' => true,
+                    'status' => 'nao_iniciada'
+                ]);
             }
         } catch (Exception $e) {
             return response()->json([
