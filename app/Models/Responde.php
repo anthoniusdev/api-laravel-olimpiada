@@ -9,6 +9,9 @@ class Responde extends Model
 {
     use HasFactory;
     protected $fillable = [
+        'id',
+        'status',
+        'data_hora_inicio',
         'id_aluno',
         'id_prova', 
         'pontuacao',

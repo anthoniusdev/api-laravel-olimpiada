@@ -8,6 +8,7 @@ use App\Http\Controllers\ProvaController;
 use App\Http\Controllers\QuestaoController;
 use App\Http\Controllers\AssinaladasController;
 use App\Http\Controllers\QuestaoTemporariaController;
+use App\Models\Prova;
 use App\Models\QuestaoTemporaria;
 use Illuminate\Support\Facades\Route;
 
@@ -39,11 +40,13 @@ Route::prefix('/aluno')->group(function () {
         Route::put('/update', [AlunoController::class, 'update']);
         Route::delete('/delete', [AlunoController::class, 'delete']);
         Route::prefix('/prova')->group(function(){
+            Route::post('status', [ProvaController::class, 'getStatus']);
+            Route::post('/iniciar_prova', [ProvaController::class, 'iniciarProva']);
+            Route::post('finalizar_prova', [ProvaController::class, 'finalizarProva']);
             Route::post('/add_prova', [ProvaController::class, 'store']);
-            Route::get('/prova_respondida', [AlunoController::class, 'validarProvaRespondida']);
+            Route::get('/prova_respondida', [AssinaladasController::class, 'store']);
             Route::prefix('/questao')->group(function(){
                 Route::get('/', [AlunoController::class, 'obterQuestaoAleatoria']);
-                Route::post('/assinalar', [AssinaladasController::class, 'store']);
                 Route::post('/assinalar_temp', [QuestaoTemporariaController::class, 'store']);
             });
         });
