@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Aluno;
+use App\Models\Area;
 use App\Models\Assinala;
-use App\Http\Controllers\AlunoController;
+use App\Models\Prova;
+use App\Models\QuestaoTemporaria;
+use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -34,32 +38,29 @@ class AssinaladasController extends Controller
     public function store(Request $request)
     {
         try {
+            $modalidade = Aluno::select('modalidade')->where('usuario', $request['usuario'])->first();
+            $modalidade = $modalidade->modalidade;
+            $id_prova = DB::select('SELECT id FROM provas WHERE modalidade = ? AND id_area = ?', [$modalidade, $request['id_area']]);
+            $id_prova = $id_prova[0]->id;
             $aluno_id = $this->retornaID($request['usuario']);
             $aluno_id = $aluno_id['id'];
-
-
-            $assinala_questao = Assinala::create([
-                'id_aluno' => $aluno_id,
-                'id_questao' => $request->input('id_questao'),
-                'id_alternativa_assinalada' => $request->input('id_alternativa_assinalada')
-            ]);
-
-            $alunoController = new AlunoController();
-            $resultado = $alunoController->validarProvaRespondida($request);
-
-            //tratando a resposta json retornada pela funcao
-            $status_prova = json_decode($resultado->getContent(), true);
+            $questoesTemporarias = DB::select('SELECT * from questao_temporarias qt where id_aluno = ? and id_questao in (select id from questaos where id_prova = ?)', [$aluno_id, $id_prova]);
+            foreach ($questoesTemporarias as $questao) {
+                Assinala::create([
+                    'id_aluno' => $aluno_id,
+                    'id_questao' => $questao->id_questao,
+                    'id_alternativa_assinalada' => $questao->id_alternativa_assinalada
+                ]);
+            }
 
             return response()->json([
                 'ok' => true,
-                'msg' => 'Questao assinalada',
-                'assinala_questao' => $assinala_questao,
-                'status_prova' => $status_prova
+                'msg' => 'Prova assinalada',
             ], 200);
         } catch (Exception $e) {
             return response()->json([
                 'ok' => false,
-                'msg' => 'Erro ao assinalar questão',
+                'msg' => 'Erro ao assinalar prova',
                 'error' => $e->getMessage()
             ], 500);
         }
