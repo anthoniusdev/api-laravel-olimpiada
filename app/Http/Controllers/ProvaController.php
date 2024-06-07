@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Aluno;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Models\Prova;
@@ -73,12 +74,17 @@ class ProvaController extends Controller
     public function iniciarProva(Request $request)
     {
         try {
+            if ($request['id_area'] == 'IL933QzqrGA5eO4z') {
+                $modalidade_aluno = 'a';
+            } else {
+                $modalidade_aluno = Aluno::select('modalidade')->where('usuario', $request['usuario'])->first();
+                $modalidade_aluno = $modalidade_aluno->modalidade;
+            }
             $aluno_id = $this->retornaID($request['usuario']);
             $aluno_id = $aluno_id['id'];
-            $id_prova = DB::select('SELECT id FROM provas WHERE modalidade = ? AND id_area = ?', [$request['modalidade'], $request['id_area']]);
+            $id_prova = DB::select('SELECT id FROM provas WHERE modalidade = ? AND id_area = ?', [$modalidade_aluno, $request['id_area']]);
             $id_prova = $id_prova[0]->id;
             $id = Str::uuid();
-            echo $id;
             $dados = [
                 'id' => $id,
                 'id_prova' => $id_prova,
@@ -107,7 +113,13 @@ class ProvaController extends Controller
         try {
             $aluno_id = $this->retornaID($request['usuario']);
             $aluno_id = $aluno_id['id'];
-            $id_prova = DB::select('SELECT id FROM provas WHERE modalidade = ? AND id_area = ?', [$request['modalidade'], $request['id_area']]);
+            if ($request['id_area'] == 'IL933QzqrGA5eO4z') {
+                $modalidade_aluno = 'a';
+            } else {
+                $modalidade_aluno = Aluno::select('modalidade')->where('usuario', $request['usuario'])->first();
+                $modalidade_aluno = $modalidade_aluno->modalidade;
+            }
+            $id_prova = DB::select('SELECT id FROM provas WHERE modalidade = ? AND id_area = ?', [$modalidade_aluno, $request['id_area']]);
             $id_prova = $id_prova[0]->id;
             $atualizacao = Responde::where('id_aluno', $aluno_id)->where('id_prova', $id_prova)->update(['status' => 'finalizada']);
             if ($atualizacao > 0) {
@@ -127,8 +139,14 @@ class ProvaController extends Controller
     {
         try {
             $aluno_id = $this->retornaID($request['usuario'])['id'];
+            if ($request['id_area'] == 'IL933QzqrGA5eO4z') {
+                $modalidade_aluno = 'a';
+            } else {
+                $modalidade_aluno = Aluno::select('modalidade')->where('usuario', $request['usuario'])->first();
+                $modalidade_aluno = $modalidade_aluno->modalidade;
+            }
             $id_prova = DB::table('provas')
-                ->where('modalidade', $request['modalidade'])
+                ->where('modalidade', $modalidade_aluno)
                 ->where('id_area', $request['id_area'])
                 ->value('id');
 

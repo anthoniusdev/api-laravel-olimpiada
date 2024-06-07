@@ -38,9 +38,13 @@ class AssinaladasController extends Controller
     public function store(Request $request)
     {
         try {
-            $modalidade = Aluno::select('modalidade')->where('usuario', $request['usuario'])->first();
-            $modalidade = $modalidade->modalidade;
-            $id_prova = DB::select('SELECT id FROM provas WHERE modalidade = ? AND id_area = ?', [$modalidade, $request['id_area']]);
+            if ($request['id_area'] == 'IL933QzqrGA5eO4z') {
+                $modalidade_aluno = 'a';
+            } else {
+                $modalidade_aluno = Aluno::select('modalidade')->where('usuario', $request['usuario'])->first();
+                $modalidade_aluno = $modalidade_aluno->modalidade;
+            }
+            $id_prova = DB::select('SELECT id FROM provas WHERE modalidade = ? AND id_area = ?', [$modalidade_aluno, $request['id_area']]);
             $id_prova = $id_prova[0]->id;
             $aluno_id = $this->retornaID($request['usuario']);
             $aluno_id = $aluno_id['id'];

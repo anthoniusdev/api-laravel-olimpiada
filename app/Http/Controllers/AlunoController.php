@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\DadosAluno;
 use App\Models\Area;
 use App\Models\Escola;
+use App\Models\Responde;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -306,27 +307,39 @@ class AlunoController extends Controller
     public function verificarTempoProva(Request $request){
         $aluno_id = $this->retornaID($request['usuario']);
         $aluno_id = $aluno_id['id'];
-        
+        if ($request['id_area'] == 'IL933QzqrGA5eO4z') {
+            $modalidade_aluno = 'a';
+        } else {
+            $modalidade_aluno = Aluno::select('modalidade')->where('usuario', $request['usuario'])->first();
+            $modalidade_aluno = $modalidade_aluno->modalidade;
+        }
+        $id_prova = DB::select('SELECT id FROM provas WHERE modalidade = ? AND id_area = ?', [$modalidade_aluno, $request['id_area']]);
+        $id_prova = $id_prova[0]->id;
         // Obtém a data e hora de criação da prova para o aluno
-        $prova = DB::table('respondes')
-            ->where('id_aluno', $aluno_id)->where('')
-            ->first();
-
+        $prova = DB::table('respondes')->where('id_aluno', $aluno_id)->where('id_prova', $id_prova)->first();
+        // echo json_encode($prova);
         if (!$prova) {
             return response()->json([
-                'error' => 'Prova nao iniciada'
+                'error' => 'prova não_iniciada'
             ], 404);
         }
 
-        // Calcula o tempo decorrido desde o início da prova
-        $inicioProva = Carbon::parse($prova->created_at);
+        // // Calcula o tempo decorrido desde o início da prova
+        // echo $prova->data_hora_inicio;
+        $inicioProva = Carbon::parse($prova->data_hora_inicio);
         $tempoDecorrido = $inicioProva->diffInMinutes(Carbon::now());
 
         //verifica com qtd de minutos
         if ($tempoDecorrido > 120) {
+            Responde::where('id_aluno', $aluno_id)->where('id_prova', $id_prova)->update(['status' => 'finalizada']);
             return response()->json([
                 'prova_encerrada' => true,
                 'mensagem' => 'O tempo maximo para realizar a prova foi excedido.'
+            ]);
+        }else{
+            return response()->json([
+                'prova_encerrada' => false,
+                'mensagem' => 'Faltam ' . $tempoDecorrido . ' minutos para acabar o tempo.'
             ]);
         }
     }

@@ -44,12 +44,6 @@ class QuestaoTemporariaController extends Controller
             $aluno_id = $this->retornaID($request['usuario']);
             $aluno_id = $aluno_id['id'];
 
-            // $alunoController = new AlunoController();
-            // $resultado = $alunoController->verificarTempoProva($request);
-
-            // //tratando a resposta json retornada pela funcao
-            // $status_prova = json_decode($resultado->getContent(), true);
-
             $questaoTemporaria = QuestaoTemporaria::where('id_aluno', $aluno_id)->where('id_questao', $request['id_questao'])->update(['id_alternativa_assinalada' => $request['id_alternativa_assinalada']]);
             if ($questaoTemporaria > 0) {
                 return response()->json([
