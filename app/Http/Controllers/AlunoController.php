@@ -339,7 +339,7 @@ class AlunoController extends Controller
         }else{
             return response()->json([
                 'prova_encerrada' => false,
-                'mensagem' => 'Faltam ' . $tempoDecorrido . ' minutos para acabar o tempo.'
+                'mensagem' => 'Faltam ' . 120 - $tempoDecorrido . ' minutos para acabar o tempo.'
             ]);
         }
     }
