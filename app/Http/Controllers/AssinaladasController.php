@@ -59,10 +59,10 @@ class AssinaladasController extends Controller
                 echo "<h6>|id do aluno: $assinalada->id_aluno --- id da questão: $assinalada->id_questao --- id da alternativa assinalada: $assinalada->id_alternativa_assinalada |</h6>";
             }
 
-            return response()->json([
-                'ok' => true,
-                'msg' => 'Prova assinalada',
-            ], 200);
+            // return response()->json([
+            //     'ok' => true,
+            //     'msg' => 'Prova assinalada',
+            // ], 200);
         } catch (Exception $e) {
             return response()->json([
                 'ok' => false,
