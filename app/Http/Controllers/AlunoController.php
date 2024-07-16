@@ -415,6 +415,10 @@ class AlunoController extends Controller
         return response()->json([
             'acertos1' => $acertos1,
             'acertos2' => $acertos2,
-        ]);
+        ])->withHeaders([
+            'Content-Type' => 'application/json',
+            'Access-Control-Allow-Origin' => '*',
+            'Accept' => '*'
+        ])->send();
     }
 }
