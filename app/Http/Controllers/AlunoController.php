@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Exception;
+use Illuminate\Support\Facades\Redis;
 
 class AlunoController extends Controller
 {
@@ -347,5 +348,73 @@ class AlunoController extends Controller
                 'mensagem' => 'Faltam ' . 120 - $tempoDecorrido . ' minutos para acabar o tempo.'
             ]);
         }
+    }
+
+
+    public function result(Request $request)
+    {
+        // Obter o ID do aluno
+        $aluno_id = $this->retornaID($request['usuario']);
+        $aluno_id = $aluno_id['id'];
+
+        // Obter as áreas do aluno
+        $area1 = DB::select('select id_area from alunos where id = ?', [$aluno_id])[0]->id_area ?? null;
+        $area2 = DB::select('select id_area2 from alunos where id = ?', [$aluno_id])[0]->id_area2 ?? null;
+
+        // Query para obter dados e calcular acertos para a área 1
+        $query1 = DB::select("
+        SELECT DISTINCT
+            a.nome as 'Nome do aluno', 
+            e.nome as 'Nome da escola', 
+            ar.nome as 'Nome da área', 
+            a.modalidade, 
+            ass.id_alternativa_assinalada,
+            q.id_alternativa_correta 
+        FROM 
+            assinalas ass 
+            INNER JOIN alunos a on a.id = ass.id_aluno 
+            INNER JOIN escolas e on e.codigo_escola = a.codigo_escola 
+            INNER JOIN questaos q on q.id = ass.id_questao 
+            INNER JOIN provas p on p.id = q.id_prova 
+            INNER JOIN areas ar on ar.id = p.id_area 
+        WHERE 
+            a.id = ? 
+            AND ar.id = ? 
+    ", [$aluno_id, $area1]);
+
+        $query2 = DB::select("
+        SELECT DISTINCT
+            a.nome as 'Nome do aluno', 
+            e.nome as 'Nome da escola', 
+            ar.nome as 'Nome da área', 
+            a.modalidade, 
+            ass.id_alternativa_assinalada,
+            q.id_alternativa_correta 
+        FROM 
+            assinalas ass 
+            INNER JOIN alunos a on a.id = ass.id_aluno 
+            INNER JOIN escolas e on e.codigo_escola = a.codigo_escola 
+            INNER JOIN questaos q on q.id = ass.id_questao 
+            INNER JOIN provas p on p.id = q.id_prova 
+            INNER JOIN areas ar on ar.id = p.id_area 
+        WHERE 
+            a.id = ? 
+            AND ar.id = ? 
+    ", [$aluno_id, $area2]);
+
+        // Contar os acertos para a área 1
+        $acertos1 = collect($query1)->filter(function ($item) {
+            return isset($item->id_alternativa_assinalada) && isset($item->id_alternativa_correta) && $item->id_alternativa_assinalada == $item->id_alternativa_correta;
+        })->count();
+
+        $acertos2 = collect($query2)->filter(function ($item) {
+            return isset($item->id_alternativa_assinalada) && isset($item->id_alternativa_correta) && $item->id_alternativa_assinalada == $item->id_alternativa_correta;
+        })->count();
+
+        // Retornar os resultados
+        return response()->json([
+            'acertos1' => $acertos1,
+            'acertos2' => $acertos2,
+        ]);
     }
 }
